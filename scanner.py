@@ -98,6 +98,8 @@ class Scanner:
                 if self.match("/"):
                     while self.peek() != '\n' and not self.is_at_end():
                         self.advance()
+                elif self.match("*"):
+                    self.block_comment()
                 else:
                     self.add_token(SLASH)
 
@@ -155,7 +157,7 @@ class Scanner:
 
     def string(self):
         while self.peek() != '"' and not self.is_at_end():
-            if peek() == '\n': self.line += 1
+            if self.peek() == '\n': self.line += 1
             self.advance()
 
         if self.is_at_end():
@@ -168,6 +170,14 @@ class Scanner:
         # Trim the surrounding quotes.
         value = self.__source[self.start+1:self.current-1]
         self.add_token(STRING, value)
+
+    def block_comment(self):
+        while self.peek() != "*" and self.peek_next() != "/" and \
+                not self.is_at_end():
+            c = self.advance()
+            if c == '\n':
+                self.line += 1
+        self.current += 2
 
     def advance(self) -> Char:
         c : Char = self.__source[self.current]
