@@ -2,20 +2,14 @@
 
 import sys
 import readline
-from scanner import Scanner
+from scanner import Scanner, Token
+from error import *
 
 had_error : bool = False
 
-def report(line: int, where: str, message: str):
-    print(f"[{line}] Error{where}: {message}")
-    had_error = True
-
-def error(line: int, message: str):
-    report(line, "", message)
-
 def run(source: str):
     scanner = Scanner(source)
-    tokens : list[str] = scanner.scan_tokens()
+    tokens : list[Token] = scanner.scan_tokens()
 
     for token in tokens:
         print(token)
