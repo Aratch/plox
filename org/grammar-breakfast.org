@@ -1,0 +1,45 @@
+# -*- mode: org -*-
+#+TITLE: Breakfast Grammar
+
+* Glossary
+** Symbols
+*** Terminal
+Equivalent to a literal value. Produces/evaluates to one symbol.
+*** Nonterminal
+A *named reference to another rule in the grammar". Produces one or more symbols via insertion and recursion.
+
+* Simple Breakfast Grammar
+
+#+begin_src bnf
+breakfast  -> protein "with" breakfast "on the side" ;
+breakfast  -> protein ;
+breakfast  -> bread ;
+
+protein    -> crispiness "crispy" "bacon" ;
+protein    -> "sausage" ;
+protein    -> cooked "eggs" ;
+
+crispiness -> "really" ;
+crispiness -> "really" crispiness ;
+
+cooked     -> "scrambled" ;
+cooked     -> "poached" ;
+cooked     -> "fried" ;
+
+bread      -> "toast" ;
+bread      -> "biscuits" ;
+bread      -> "English muffin" ;
+#+end_src
+
+* Enhanced Breakfast Grammar
+
+#+begin_src bnf
+breakfast  -> protein ( "with" breakfast "on the side" )?
+            | bread ;
+
+protein    -> "really"+ "crispy" "bacon"
+            | "sausage"
+            | ( "scrambled" | "poached" | "fried" ) "eggs" ;
+
+bread      -> "toast" | "biscuits" | "English muffin" ;
+#+end_src
