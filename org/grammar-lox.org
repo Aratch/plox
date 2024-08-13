@@ -30,3 +30,112 @@ unary      -> ( "!" | "-" ) unary
 primary    -> NUMBER | STRING | "true" | "false" | "nil"
             | "(" expression ")" ;
 #+end_src
+* 6.4 Challenges
+*** C style comma (sequential evaluation operator)
+#+begin_quote
+In C, a block is a statement form that allows you to pack a series of statements where a single one is expected. The comma operator is an analogous syntax for expressions. A comma-separated series of expressions can be given where a single expression is expected (except inside a function call’s argument list). At runtime, the comma operator evaluates the left operand and discards the result. Then it evaluates and returns the right operand.
+
+Add support for comma expressions. Give them the same precedence and associativity as in C. Write the grammar, and then implement the necessary parsing code.
+#+end_quote
+
+
+**** C grammar excerpt
+:sources:
+https://cs.wmich.edu/~gupta/teaching/cs4850/sumII06/The%20syntax%20of%20C%20in%20Backus-Naur%20form.htm
+
+https://gist.github.com/arslancharyev31/c48d18d8f917ffe217a0e23eb3535957
+:END:
+#+begin_src bnf
+primary-expression ::= identifier
+                       | constant
+                       | string
+                       | '(' expression ')'
+
+expression ::= assignment-expression
+               | expression ',' assignment-expression
+
+postfix-expression ::= primary-expression
+                       | postfix-expression '[' expression ']'
+                       | postfix-expression '(' {assignment-expression}* ')'
+                       | postfix-expression '.' identifier
+                       | postfix-expression '->' identifier
+                       | postfix-expression '++'
+                       | postfix-expression '--'
+
+unary-expression ::= postfix-expression
+                     | '++' unary-expression
+                     | '--' unary-expression
+                     | unary-operator cast-expression
+                     | sizeof unary-expression
+                     | sizeof type-name
+
+cast-expression ::= unary-expression
+                    | '(' type-name ')' cast-expression
+
+additive-expression ::= multiplicative-expression
+                        | additive-expression '+' multiplicative-expression
+                        | additive-expression '-' multiplicative-expression
+
+multiplicative-expression ::= cast-expression
+                              | multiplicative-expression '*' cast-expression
+                              | multiplicative-expression '/' cast-expression
+
+assignment-expression ::= conditional-expression
+                          | unary-expression assignment-operator assignment-expression
+
+conditional-expression ::= logical-or-expression
+                           | logical-or-expression '?' expression ':' conditional-expression
+#+end_src
+**** C operator precedence table (excerpt)
+https://en.cppreference.com/w/c/language/operator_precedence
+
+1. ++/-- (suffix *crement)
+2. ++/-- (prefix *crement)
+   +/-   (unary plus and minus)
+   ! ~   (unary logical NOT and bitwise NOT)
+3. * / % (mult, div, modulo)
+4. +/-   (add, subtr)
+...
+6. < <= > >=
+7. == !=
+..
+13. ?:   (ternary conditional)
+14. =    (assignment)
+15. ,    (sequential comma)
+
+
+**** Relevant changes
+In C, an expression is basically defined as
+#+begin_src bnf
+expression -> assignment-expression
+            | expression "," assignment-expression ;
+#+end_src
+
+So we simply extend our definition of an expression:
+#+begin_src bnf
+expression -> equality
+            | expression "," expression ;
+#+end_src
+
+This means that
+#+begin_src python
+    def expression(self) -> Expr:
+        return self.equality()
+#+end_src
+
+needs to accomodate the case of a binary "," operator, as in
+#+begin_src python
+    def equality(self) -> Expr:
+        expr : Expr = self.comparison()
+
+        while self.match(BANG_EQUAL, EQUAL_EQUAL):
+            operator : Token = self.previous()
+            right: Expr = self.comparison()
+            expr = Binary(expr, operator, right)
+
+        return expr
+#+end_src
+
+*Caveats*:
+- The , operator has the lowest precedence (is evaluated last, i.e. all sub-expressions are evaluated first) -> this is already the case
+- The , operator has left-to-right associativity
