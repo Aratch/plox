@@ -2,11 +2,12 @@
 
 import sys
 import readline
-from parser import Parser
-from ast_printer import AstPrinter
-from scanner import Scanner, Token
-from expr import Expr
-from error import *
+from plox.parser import Parser
+from plox.ast_printer import AstPrinter
+from plox.token import Token
+from plox.scanner import Scanner
+from plox.expr import Expr
+from plox.error import *
 
 had_error : bool = False
 

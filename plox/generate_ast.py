@@ -32,7 +32,7 @@ def define_ast(output_dir: Path, base_name: str, types: list[str]):
         write("#!/usr/bin/env python3")
         write()
         write("from abc import ABC")
-        write("from scanner import Token")
+        write("from .token import Token")
         write("from dataclasses import dataclass")
         write()
         write(f"class {base_name}(ABC):")

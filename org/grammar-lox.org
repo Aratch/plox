@@ -137,5 +137,10 @@ needs to accomodate the case of a binary "," operator, as in
 #+end_src
 
 *Caveats*:
-- The , operator has the lowest precedence (is evaluated last, i.e. all sub-expressions are evaluated first) -> this is already the case
-- The , operator has left-to-right associativity
+- The , operator has the lowest precedence (is evaluated last, i.e. all sub-expressions are evaluated first)
+        -> this is already the case
+
+- The , operator has left-to-right associativity (i.e. the left side is evaluated first, duh)
+        -> This might not be correct yet
+
+My current grammar rule is *left-recursive*. This is DANGEROUS.

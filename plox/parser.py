@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-from error import error
-from scanner import Token, TokenType
-from expr import *
+from .error import error
+from .token import Token, TokenType
+from .expr import *
 from typing import Callable
 
 globals().update(TokenType.__members__)

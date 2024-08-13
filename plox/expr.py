@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from abc import ABC
-from scanner import Token
+from .token import Token
 from dataclasses import dataclass
 
 class Expr(ABC):

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from scanner import Token, TokenType
+from .token import Token, TokenType
 
 def report(line: int, where: str, message: str):
     print(f"[{line}] Error{where}: {message}")

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-from scanner import Token, TokenType
-from expr import Expr, Binary, Grouping, Unary, Literal
-from visitor import visitor
+from .token import Token, TokenType
+from .expr import Expr, Binary, Grouping, Unary, Literal
+from .visitor import visitor
 
 class AstPrinter():
     def print(self, expr: Expr):
