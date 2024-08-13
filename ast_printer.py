@@ -27,7 +27,7 @@ class AstPrinter():
         return self.__parenthesize(expr.operator.lexeme, expr.right)
 
     def __parenthesize(self, name: str, *exprs: Expr):
-        return f" ({name} {''.join(self.visit(expr) for expr in exprs)} )"
+        return f" ({name} {' '.join(self.visit(expr) for expr in exprs)} )"
 
 if __name__ == "__main__":
     expression = Binary(

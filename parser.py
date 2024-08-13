@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
+from error import error
 from scanner import Token, TokenType
 from expr import *
 from typing import Callable
-from error import error
 
 globals().update(TokenType.__members__)
 
@@ -11,10 +11,15 @@ class ParseError(RuntimeError):
     pass
 
 class Parser:
-
-    def init__(self, tokens: list[Token]):
+    def __init__(self, tokens: list[Token]):
         self.tokens : list[Token] = tokens
         self.current : int = 0
+
+    def parse(self) -> Expr | None:
+        try:
+            return self.expression()
+        except ParseError:
+            return None
 
     def is_at_end(self):
         return self.peek().type == EOF
@@ -102,6 +107,8 @@ class Parser:
             self.consume(RIGHT_PAREN, "Expected ')' after expression.")
             return Grouping(expr)
 
+        raise self.error(self.peek(), "Expected expression.")
+
     def consume(self, type: TokenType, message: str):
         if self.check(type):
             return self.advance()
@@ -123,3 +130,24 @@ class Parser:
         if self.is_at_end():
             return False
         return self.peek().type == type
+
+    def synchronize(self):
+        self.advance()
+
+        while not self.is_at_end():
+            if self.previous().type == SEMICOLON: return
+
+            match self.peek().type:
+                case TokenType.CLASS | \
+                    TokenType.FUN | \
+                    TokenType.VAR | \
+                    TokenType.FOR | \
+                    TokenType.IF | \
+                    TokenType.WHILE | \
+                    TokenType.PRINT | \
+                    TokenType.RETURN: # pyright: ignore
+                    return
+                case _:
+                    pass
+
+            self.advance()

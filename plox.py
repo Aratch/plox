@@ -2,17 +2,26 @@
 
 import sys
 import readline
+from parser import Parser
+from ast_printer import AstPrinter
 from scanner import Scanner, Token
+from expr import Expr
 from error import *
 
 had_error : bool = False
 
 def run(source: str):
     scanner = Scanner(source)
-    tokens : list[Token] = scanner.scan_tokens()
+    tokens: list[Token] = scanner.scan_tokens()
+    parser = Parser(tokens)
+    expression: Expr | None = parser.parse()
 
-    for token in tokens:
-        print(token)
+    if had_error:
+        return
+
+    # Make pyright shut the hell up
+    if expression:
+        print(AstPrinter().print(expression))
 
 def run_file(path: str):
     with open(path, "r") as f:
