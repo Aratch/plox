@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 
 from .token import Token, TokenType
-from .expr import Expr, Binary, Grouping, Unary, Literal
+from .expr import Expr, Binary, Grouping, Unary, Literal, Ternary
 from .visitor import visitor
 
 class AstPrinter():
     def print(self, expr: Expr):
         return self.visit(expr).strip()
 
+    @visitor(Ternary)
+    def visit(self, expr: Ternary):
+        return self.__parenthesize(expr.operator.lexeme,
+                                   expr.condition, expr.left, expr.right)
     @visitor(Binary)
     def visit(self, expr: Binary):
         return self.__parenthesize(expr.operator.lexeme,

@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 
 from .token import Token, TokenType
-from .expr import Expr, Binary, Grouping, Unary, Literal
+from .expr import Expr, Binary, Grouping, Unary, Literal, Ternary
 from .visitor import visitor
 
 class AstMatcher:
     def match(self, left: Expr, right: Expr):
         return self.visit(left) == self.visit(right)
+
+    @visitor(Ternary)
+    def visit(self, expr: Ternary): #pyright: ignore
+        return expr.operator.lexeme, \
+            self.visit(expr.condition), \
+            self.visit(expr.left), \
+            self.visit(expr.right) #pyright: ignore
 
     @visitor(Binary)
     def visit(self, expr: Binary): #pyright: ignore

@@ -59,6 +59,8 @@ class Scanner:
             case '+': self.add_token(PLUS)
             case ';': self.add_token(SEMICOLON)
             case '*': self.add_token(STAR)
+            case '?': self.add_token(QUESTION_MARK)
+            case ':': self.add_token(COLON)
 
             case '!':
                 self.add_token(BANG_EQUAL if self.match("=") else BANG)

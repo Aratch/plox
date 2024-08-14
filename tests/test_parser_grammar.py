@@ -140,5 +140,24 @@ class TestParserGrammar(unittest.TestCase):
         self.assertTrue(matcher.match(actual, expected),
                         mismatch(actual, expected))
 
+    def test_ternary_conditional(self):
+        source = "2 == 1 ? 2 + 1 : 2 * 2"
+        actual = self.parse_expression(source)
+        expected = Ternary(
+            Token(TokenType.QUESTION_MARK, "?", None, 1),
+            Binary(Literal(2.0),
+                   Token(TokenType.EQUAL_EQUAL, "==", None, 1),
+                   Literal(1.0)),
+            Binary(Literal(2.0),
+                   Token(TokenType.PLUS, "+", None, 1),
+                   Literal(1.0)),
+            Binary(Literal(2.0),
+                   Token(TokenType.STAR, "*", None, 1),
+                   Literal(2.0))
+        )
+        self.assertIsNotNone(actual)
+        self.assertTrue(matcher.match(actual, expected),
+                        mismatch(actual, expected))
+
 if __name__ == "__main__":
     unittest.main()

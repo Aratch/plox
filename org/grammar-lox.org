@@ -272,12 +272,25 @@ TokenType = Enum(...
 
         # If the next operator is a question mark
         while self.match(QUESTION_MARK):
-            # operator: Token = self.previous()
+            operator: Token = self.previous()
             condition : Expr = self.expression()
             if self.match(COLON):
                 right : Expr = self.ternary()
-                expr = Ternary(expr, condition, right)
+                expr = Ternary(operator, expr, condition, right)
             else:
                 raise self.error(self.peek(), "Expected colon in ternary expression.")
         return expr
+#+end_src
+
+I forgot that Ternary should maybe also include the operator for completeness' sake.
+
+*CAVEAT*: I messed up the order of arguments. The correct ast object description would be
+#+begin_src
+        "Ternary  : Token operator, Expr condition, Expr left, Expr right"
+#+end_src
+So that constructing a Ternary object looks like this:
+#+begin_src
+            if self.match(COLON):
+                right : Expr = self.ternary()
+                expr = Ternary(operator, condition, right, right)
 #+end_src

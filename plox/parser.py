@@ -48,13 +48,29 @@ class Parser:
     #     return fun
 
     def sequence(self) -> Expr:
-        expr : Expr = self.equality()
+        expr : Expr = self.ternary()
 
         while self.match(COMMA):
             operator : Token = self.previous()
-            right : Expr = self.equality()
+            right : Expr = self.ternary()
             expr = Binary(expr, operator, right)
 
+        return expr
+
+    # XXX: Requires from plox.expr import Ternary
+    # *and* regenerate ast
+    def ternary(self) -> Expr:
+        expr : Expr = self.equality()
+
+        # If the next operator is a question mark
+        while self.match(QUESTION_MARK):
+            operator: Token = self.previous()
+            condition : Expr = self.expression()
+            if self.match(COLON):
+                right : Expr = self.ternary()
+                expr = Ternary(operator, expr, condition, right)
+            else:
+                raise self.error(self.peek(), "Expected colon in ternary expression.")
         return expr
 
     def equality(self) -> Expr:

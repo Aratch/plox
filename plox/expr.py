@@ -26,3 +26,10 @@ class Unary(Expr):
     operator: Token
     right: Expr
 
+@dataclass
+class Ternary(Expr):
+    operator: Token
+    condition: Expr
+    left: Expr
+    right: Expr
+
