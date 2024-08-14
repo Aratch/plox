@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import unittest
-
+from plox.ast_printer import AstPrinter
 from plox.token import TokenType, Token
 from plox.scanner import Scanner
 from plox.parser import Parser
@@ -12,6 +12,14 @@ from plox.ast_matcher import AstMatcher
 globals().update(TokenType.__members__)
 
 matcher = AstMatcher()
+printer = AstPrinter()
+
+def mismatch(actual, expected):
+    msg = f"""
+Expr's not matching
+Expected: {expected} {printer.print(expected)}
+Actual: {actual} {printer.print(actual)}"""
+    return msg
 
 class TestParserGrammar(unittest.TestCase):
     def parse_expression(self, source: str) -> Expr | None:
@@ -22,11 +30,87 @@ class TestParserGrammar(unittest.TestCase):
         return expression
 
     def test_string_literal(self):
-        actual = self.parse_expression('"foo"')
-        expected = Literal("foo")
+        literal = '"foo"'
+        actual = self.parse_expression(literal)
+        expected = Literal(literal.strip("\""))
         self.assertIsNotNone(actual)
         self.assertTrue(matcher.match(actual, expected),
-                         f"Expr's not matching\nExpected: {expected}\nActual: {actual}")
+                        mismatch(actual, expected))
+
+    def test_numeric_literal(self):
+        literal = '42'
+        actual = self.parse_expression(literal)
+        # XXX: lox is like js: all numbers are floats
+        expected = Literal(float(literal))
+        self.assertIsNotNone(actual)
+        self.assertTrue(matcher.match(actual, expected),
+                        mismatch(actual, expected))
+
+    def test_unary(self):
+        source = "-1.0"
+        actual = self.parse_expression(source)
+        expected = Unary(
+            Token(TokenType.MINUS, "-", None, 1),
+            Literal(1.0)
+        )
+        self.assertIsNotNone(actual)
+        self.assertTrue(matcher.match(actual, expected),
+                        mismatch(actual, expected))
+
+    def test_binary(self):
+        source = "1.0 + 2.0"
+        actual = self.parse_expression(source)
+        expected = Binary(
+            Literal(1.0),
+            Token(TokenType.PLUS, "+", None, 1),
+            Literal(2.0)
+        )
+        self.assertIsNotNone(actual)
+        self.assertTrue(matcher.match(actual, expected),
+                        mismatch(actual, expected))
+
+    def test_grouped_expression(self):
+        source = "-123 * (45.67)"
+        actual = self.parse_expression(source)
+        expected = Binary(
+            Unary(
+                Token(TokenType.MINUS, "-", None, 1),
+                Literal(123)),
+            Token(TokenType.STAR, "*", None, 1),
+            Grouping(
+                Literal(45.67)
+            )
+        )
+        self.assertIsNotNone(actual)
+        self.assertTrue(matcher.match(actual, expected),
+                        mismatch(actual, expected))
+
+    def test_grouped_complex_expression(self):
+        source = "-123 * (45.67 + 2.0)"
+        actual = self.parse_expression(source)
+        expected = Binary(
+            Unary(
+                Token(TokenType.MINUS, "-", None, 1),
+                Literal(123)),
+            Token(TokenType.STAR, "*", None, 1),
+            Grouping(
+                Binary(Literal(45.67),
+                       Token(TokenType.PLUS, "+", None, 1),
+                       Literal(2.0))
+
+            )
+        )
+        self.assertIsNotNone(actual)
+        self.assertTrue(matcher.match(actual, expected),
+                        mismatch(actual, expected))
+
+    def test_parse_errors(self):
+        maligned = ["!", ".3", "(", ","]
+        results = []
+        for source in maligned:
+            results.append(self.parse_expression(source) == None)
+        self.assertTrue(results != [])
+        self.assertTrue(all(results))
 
 if __name__ == "__main__":
     unittest.main()

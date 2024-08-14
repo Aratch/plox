@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
+import sys
 from .token import Token, TokenType
 
 def report(line: int, where: str, message: str):
-    print(f"[{line}] Error{where}: {message}")
+    print(f"[{line}] Error{where}: {message}", file=sys.stderr)
     had_error = True
 
 def error(obj: int | Token, message: str):
