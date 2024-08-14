@@ -36,13 +36,24 @@ class Parser:
         return self.tokens[self.current - 1]
 
     def expression(self) -> Expr:
-        return self.equality()
+        return self.sequence()
+
 
     # def __binary(self, rule, preceding, tokens) -> Callable:
     #     def fun():
     #         expr = Expr()
     #         right = Expr()
     #     return fun
+
+    def sequence(self) -> Expr:
+        expr : Expr = self.equality()
+
+        while self.match(COMMA):
+            operator : Token = self.previous()
+            right : Expr = self.equality()
+            expr = Binary(expr, operator, right)
+
+        return expr
 
     def equality(self) -> Expr:
         expr : Expr = self.comparison()

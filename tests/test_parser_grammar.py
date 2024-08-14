@@ -128,5 +128,17 @@ class TestParserGrammar(unittest.TestCase):
             self.assertTrue(results != [])
             self.assertTrue(all(results))
 
+    def test_sequential_comma_operator(self):
+        source = "1.0 , 2.0"
+        actual = self.parse_expression(source)
+        expected = Binary(
+            Literal(1.0),
+            Token(TokenType.COMMA, ",", None, 1),
+            Literal(2.0)
+        )
+        self.assertIsNotNone(actual)
+        self.assertTrue(matcher.match(actual, expected),
+                        mismatch(actual, expected))
+
 if __name__ == "__main__":
     unittest.main()

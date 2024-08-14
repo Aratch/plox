@@ -144,3 +144,28 @@ needs to accomodate the case of a binary "," operator, as in
         -> This might not be correct yet
 
 My current grammar rule is *left-recursive*. This is DANGEROUS.
+
+How about this, then:
+#+begin_src bnf
+expression -> sequence ;
+sequence -> equality ( "," equality )* ;
+equality   -> comparison ( ( "!=" | "==" ) comparison )* ;
+#+end_src
+
+This yields
+#+begin_src python
+    def expression(self) -> Expr:
+        return self.sequence()
+
+    def sequence(self) -> Expr:
+        expr : Expr = self.equality()
+
+        while self.match(COMMA):
+            operator : Token = self.previous()
+            right : Expr = self.equality()
+            expr = Binary(expr, operator, right)
+
+        return expr
+#+end_src
+
+This seems *CORRECT*?
