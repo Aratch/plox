@@ -8,6 +8,21 @@ from plox.parser import Parser
 from plox.expr import *
 from plox.ast_matcher import AstMatcher
 
+import sys
+import contextlib
+
+# https://stackoverflow.com/a/1810086
+@contextlib.contextmanager
+def nostderr():
+    savestderr = sys.stderr
+    class Devnull(object):
+        def write(self, _): pass
+        def flush(self): pass
+    sys.stderr = Devnull()
+    try:
+        yield
+    finally:
+        sys.stderr = savestderr
 
 globals().update(TokenType.__members__)
 
@@ -107,10 +122,11 @@ class TestParserGrammar(unittest.TestCase):
     def test_parse_errors(self):
         maligned = ["!", ".3", "(", ","]
         results = []
-        for source in maligned:
-            results.append(self.parse_expression(source) == None)
-        self.assertTrue(results != [])
-        self.assertTrue(all(results))
+        with nostderr():
+            for source in maligned:
+                results.append(self.parse_expression(source) == None)
+            self.assertTrue(results != [])
+            self.assertTrue(all(results))
 
 if __name__ == "__main__":
     unittest.main()
