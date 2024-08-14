@@ -36,6 +36,8 @@ class Parser:
         return self.tokens[self.current - 1]
 
     def expression(self) -> Expr:
+        # XXX: Restore this to sidestep potentially problematic sequence operator
+        # return self.equality()
         return self.sequence()
 
 

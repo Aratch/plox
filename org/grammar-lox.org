@@ -31,7 +31,7 @@ primary    -> NUMBER | STRING | "true" | "false" | "nil"
             | "(" expression ")" ;
 #+end_src
 * 6.4 Challenges
-*** C style comma (sequential evaluation operator)
+*** DONE C style comma (sequential evaluation operator)
 #+begin_quote
 In C, a block is a statement form that allows you to pack a series of statements where a single one is expected. The comma operator is an analogous syntax for expressions. A comma-separated series of expressions can be given where a single expression is expected (except inside a function call’s argument list). At runtime, the comma operator evaluates the left operand and discards the result. Then it evaluates and returns the right operand.
 
@@ -148,7 +148,7 @@ My current grammar rule is *left-recursive*. This is DANGEROUS.
 How about this, then:
 #+begin_src bnf
 expression -> sequence ;
-sequence -> equality ( "," equality )* ;
+sequence   -> equality ( "," equality )* ;
 equality   -> comparison ( ( "!=" | "==" ) comparison )* ;
 #+end_src
 
@@ -169,3 +169,115 @@ This yields
 #+end_src
 
 This seems *CORRECT*?
+
+*** TODO C-style ternary '?:' operator
+The lox grammar looks like this now:
+
+#+begin_src bnf
+expression -> sequence ;
+sequence   -> equality ( "," equality )* ;
+equality   -> comparison ( ( "!=" | "==" ) comparison )* ;
+comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term       -> factor ( ( "-" | "+" ) factor )* ;
+factor     -> unary ( ( "/" | "*" ) unary )* ;
+unary      -> ( "!" | "-" ) unary
+            | primary ;
+primary    -> NUMBER | STRING | "true" | "false" | "nil"
+            | "(" expression ")" ;
+#+end_src
+
+In the C grammar, the "? :" operator is lodged here:
+#+begin_src bnf
+conditional-expression ::= logical-or-expression
+                           | logical-or-expression '?' expression ':' conditional-expression
+#+end_src
+
+Where =logical-or-expression= may basically evaluate down to a primary expression or something in between.
+
+
+In the lox grammar, this might look like this:
+#+begin_src bnf
+sequence -> ternary ( "," ternary )* ;
+ternary -> equality ( "?" expression ":" ternary )* ;
+#+end_src
+
+This isn't left-recursive, but it's looking awfully... recursive.
+
+This will require some changes in =generate_ast.py= to accomodate a ternary expression:
+#+begin_src python
+    define_ast(output_dir, "Expr", [
+        "Binary   : Expr left, Token operator, Expr right",
+        "Grouping : Expr expression",
+        "Literal  : object value",
+        "Unary    : Token operator, Expr right",
+        "Ternary  : Expr left, Expr condition, Expr right"
+    ])
+#+end_src
+
+Might just as well make the generator more data-driven and have it read something like:
+#+begin_src
+Binary   : Expr left, Token operator, Expr right
+Grouping : Expr expression
+Literal  : object value
+Unary    : Token operator, Expr right
+Ternary  : Expr left, Expr condition, Expr right
+#+end_src
+
+But that'd be too much work.
+
+This would mean that code would change like this:
+
+#+name: token.py
+#+begin_src python
+
+TokenType = Enum(...
+                 # +++ Add this +++
+                 QUESTION_MARK, COLON,
+                 EOF""")
+#+end_src
+#+begin_src python
+
+    def scan_token(self):
+        c : Char = self.advance()
+        match c:
+            case '(': self.add_token(LEFT_PAREN)
+            case ')': self.add_token(RIGHT_PAREN)
+            case '}': self.add_token(LEFT_BRACE)
+            case '{': self.add_token(RIGHT_BRACE)
+            case ',': self.add_token(COMMA)
+            case '.': self.add_token(DOT)
+            case '-': self.add_token(MINUS)
+            case '+': self.add_token(PLUS)
+            case ';': self.add_token(SEMICOLON)
+            case '*': self.add_token(STAR)
+            # +++ ADD THIS +++
+            case '?': self.add_token(QUESTION_MARK)
+            case ':': self.add_token(COLON)
+...
+#+end_src
+#+begin_src python
+    def sequence(self) -> Expr:
+        expr : Expr = self.ternary()
+
+        while self.match(COMMA):
+            operator : Token = self.previous()
+            right : Expr = self.ternary()
+            expr = Binary(expr, operator, right)
+
+        return expr
+
+    # XXX: Requires from plox.expr import Ternary
+    def ternary(self) -> Expr:
+        expr : Expr = self.equality()
+
+        # If the next operator is a question mark
+        while self.match(QUESTION_MARK):
+            # operator: Token = self.previous()
+            condition : Expr = self.expression()
+            if self.match(COLON):
+                right : Expr = self.ternary()
+                expr = Ternary(expr, condition, right)
+            else:
+                raise self.error(self.peek(), "Expected colon in ternary expression.")
+        return expr
+#+end_src
