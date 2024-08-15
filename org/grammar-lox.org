@@ -294,3 +294,8 @@ So that constructing a Ternary object looks like this:
                 right : Expr = self.ternary()
                 expr = Ternary(operator, condition, right, right)
 #+end_src
+
+*** TODO Error production for binary ops with missing left-hand expression
+#+begin_quote
+Add error productions to handle each binary operator appearing without a left-hand operand. In other words, detect a binary operator appearing at the beginning of an expression. Report that as an error, but also parse and discard a right-hand operand with the appropriate precedence.
+#+end_quote
