@@ -159,5 +159,23 @@ class TestParserGrammar(unittest.TestCase):
         self.assertTrue(matcher.match(actual, expected),
                         mismatch(actual, expected))
 
+    def test_discard_malformed_binary(self):
+        # https://stackoverflow.com/a/61533524
+        import io
+        import contextlib
+
+        f = io.StringIO()
+
+        source = "+ 2"
+
+        with contextlib.redirect_stderr(f):
+            actual = self.parse_expression(source)
+
+        self.assertIsNone(actual)
+        self.assertRegex(f.getvalue(),
+                            "Error at '\+'")
+        self.assertRegex(f.getvalue(),
+                            "Expected left-hand side")
+
 if __name__ == "__main__":
     unittest.main()

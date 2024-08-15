@@ -295,7 +295,71 @@ So that constructing a Ternary object looks like this:
                 expr = Ternary(operator, condition, right, right)
 #+end_src
 
-*** TODO Error production for binary ops with missing left-hand expression
+*** DONE Error production for binary ops with missing left-hand expression
 #+begin_quote
 Add error productions to handle each binary operator appearing without a left-hand operand. In other words, detect a binary operator appearing at the beginning of an expression. Report that as an error, but also parse and discard a right-hand operand with the appropriate precedence.
 #+end_quote
+
+As a reminder:
+
+#+begin_src bnf
+expression -> sequence ;
+sequence -> ternary ( "," ternary )* ;
+ternary -> equality ( "?" expression ":" ternary )* ;
+equality   -> comparison ( ( "!=" | "==" ) comparison )* ;
+comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term       -> factor ( ( "-" | "+" ) factor )* ;
+factor     -> unary ( ( "/" | "*" ) unary )* ;
+unary      -> ( "!" | "-" ) unary
+            | primary ;
+primary    -> NUMBER | STRING | "true" | "false" | "nil"
+            | "(" expression ")" ;
+#+end_src
+
+One ad-hoc way to approach this is to add the check in =primary()= and bubble it up from there?
+
+#+begin_src python
+    def primary(self) -> Expr:
+        # +
+        binary_operators = set([COMMA, BANG_EQUAL, EQUAL_EQUAL,
+                               GREATER, GREATER_EQUAL, LESS, LESS_EQUAL,
+                               MINUS, PLUS,
+                               SLASH, STAR])
+        # +
+        if self.match(FALSE):
+            return Literal(False)
+        if self.match(TRUE):
+            return Literal(True)
+        if self.match(NIL):
+            return Literal(None)
+        if self.match(NUMBER, STRING):
+            return Literal(self.previous().literal)
+
+        if self.match(LEFT_PAREN):
+            expr : Expr = self.expression()
+            self.consume(RIGHT_PAREN, "Expected ')' after expression.")
+            return Grouping(expr)
+
+        for op in binary_operators:
+            if self.match(op):
+                operator_token = self.previous()
+                self.consume(A_BUNCH_OF_TOKEN_TYPES, "foo")
+                # How do I consume the entire right-hand operand?!
+                raise self.error(operator_token, f"Expected left-hand side of binary operator {operator_token.lexeme}.")
+
+        raise self.error(self.peek(), "Expected expression.")
+#+end_src
+
+The way it's written, it'll only consume the operator and one token on the right of the operator. This won't do.
+
+Could I call =self.expression()= again inside the error block?
+
+#+begin_src python
+                operator_token = self.peek()
+                expr = self.expression() # will be discarded?
+                raise self.error(operator_token, f"Expected left-hand side of binary operator {operator_token.lexeme}.")
+#+end_src
+
+This would loop through the entire parsing process again and might effectively discard the right-hand operand? I sure as hell don't know.
+
+...it seems to be working, though. Do I need synchronisation? I dunno.

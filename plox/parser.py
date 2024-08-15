@@ -48,7 +48,7 @@ class Parser:
     #     return fun
 
     def sequence(self) -> Expr:
-        # XXX: Restore direct calls to self.equality() to bypass ternary conditionals
+        # XXX: Restore direct calls to self.equality() 
         expr : Expr = self.ternary()
 
         while self.match(COMMA):
@@ -58,7 +58,7 @@ class Parser:
 
         return expr
 
-    # XXX: Requires from plox.expr import Ternary
+    # XXX: Require + 2.0s from plox.expr import Ternary
     # *and* regenerate ast
     def ternary(self) -> Expr:
         expr : Expr = self.equality()
@@ -136,6 +136,21 @@ class Parser:
             expr : Expr = self.expression()
             self.consume(RIGHT_PAREN, "Expected ')' after expression.")
             return Grouping(expr)
+
+
+        binary_operators = set([COMMA, BANG_EQUAL, EQUAL_EQUAL,
+                                GREATER, GREATER_EQUAL, LESS, LESS_EQUAL,
+                                MINUS, PLUS,
+                                SLASH, STAR])
+
+        for op in binary_operators:
+            if self.match(op):
+                operator_token = self.previous()
+                expr = self.expression() # will be discarded?
+                raise self.error(
+                    operator_token,
+                    f"Expected left-hand side of binary operator {operator_token.lexeme}."
+                )
 
         raise self.error(self.peek(), "Expected expression.")
 
