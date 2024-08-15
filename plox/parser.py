@@ -48,6 +48,7 @@ class Parser:
     #     return fun
 
     def sequence(self) -> Expr:
+        # XXX: Restore direct calls to self.equality() to bypass ternary conditionals
         expr : Expr = self.ternary()
 
         while self.match(COMMA):

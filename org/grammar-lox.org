@@ -170,7 +170,7 @@ This yields
 
 This seems *CORRECT*?
 
-*** TODO C-style ternary '?:' operator
+*** DONE C-style ternary '?:' operator
 The lox grammar looks like this now:
 
 #+begin_src bnf
