@@ -82,6 +82,23 @@ class Interpreter:
 
     # Statement methods (superclass Stmt)
 
+    @visitor(Block)
+    def visit(self, stmt: Block):
+        self.execute_block(stmt.statements, Environment(self.environment))
+
+    def execute_block(self, statements: list[Stmt],
+                      environment: Environment):
+        previous: Environment = self.environment
+
+        try:
+            self.environment = environment
+
+            for statement in statements:
+                self.execute(statement)
+
+        finally:
+            self.environment = previous
+
     @visitor(Expression)
     def visit(self, stmt: Expression):
         self.evaluate(stmt.expression)

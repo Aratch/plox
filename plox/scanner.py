@@ -51,8 +51,8 @@ class Scanner:
         match c:
             case '(': self.add_token(LEFT_PAREN)
             case ')': self.add_token(RIGHT_PAREN)
-            case '}': self.add_token(LEFT_BRACE)
-            case '{': self.add_token(RIGHT_BRACE)
+            case '{': self.add_token(LEFT_BRACE)
+            case '}': self.add_token(RIGHT_BRACE)
             case ',': self.add_token(COMMA)
             case '.': self.add_token(DOT)
             case '-': self.add_token(MINUS)

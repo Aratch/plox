@@ -103,3 +103,19 @@ a = b = c > d ? "foo" : "bar"
 #+end_src
 
 ...why not, actually?
+
+* 8.5.2 Block syntax
+
+
+#+begin_src bnf
+statement -> exprStmt
+           | printStmt
+           | block ;
+
+
+block     -> "{" declaration* "}" ;
+#+end_src
+
+#+begin_quote
+A block is a (possibly) empty series of statements or declarations surrounded by curly braces.
+#+end_quote
