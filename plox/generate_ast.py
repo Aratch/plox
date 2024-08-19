@@ -24,7 +24,8 @@ def define_type(writer: Callable, base_name: str, class_name: str, field_str: st
         write(f"pass", 1)
     write()
 
-def define_ast(output_dir: Path, base_name: str, types: list[str]):
+def define_ast(output_dir: Path, base_name: str, types: list[str],
+               imports : list = []):
     path: Path = output_dir / (base_name.lower() + ".py")
 
     with path.open("w+") as f:
@@ -34,6 +35,9 @@ def define_ast(output_dir: Path, base_name: str, types: list[str]):
         write("from abc import ABC")
         write("from .token import Token")
         write("from dataclasses import dataclass")
+        if imports:
+            for i in imports:
+                write(i)
         write()
         write(f"class {base_name}(ABC):")
         write(f"pass", 1)
@@ -60,6 +64,12 @@ def main(argv: list):
         "Unary    : Token operator, Expr right",
         "Ternary  : Token operator, Expr condition, Expr left, Expr right"
     ])
+
+    define_ast(output_dir, "Stmt", [
+        "Expression : Expr expression",
+        "Print      : Expr expression"
+    ],
+               ["from .expr import Expr"])
 
 if __name__ == '__main__':
     main(sys.argv[1:])

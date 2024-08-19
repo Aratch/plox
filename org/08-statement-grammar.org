@@ -1,0 +1,34 @@
+#+title: 08 Statement Grammar
+
+* 8.1 Statements
+
+With our current expression syntax in the back of our head:
+
+#+begin_src bnf
+expression -> sequence ;
+sequence   -> ternary ( "," ternary )* ;
+ternary    -> equality ( "?" expression ":" ternary )* ;
+equality   -> comparison ( ( "!=" | "==" ) comparison )* ;
+comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term       -> factor ( ( "-" | "+" ) factor )* ;
+factor     -> unary ( ( "/" | "*" ) unary )* ;
+unary      -> ( "!" | "-" ) unary
+            | primary ;
+primary    -> NUMBER | STRING | "true" | "false" | "nil"
+            | "(" expression ")" ;
+#+end_src
+
+We start with two kinds of statements:
+
+1. *Expression statements*: Let's you place an expression where a statement is expected.
+2. =print= *statements*
+
+#+begin_src bnf
+program -> statement* EOF ;
+
+statement -> exprStmt
+          | printStmt ;
+
+exprStmt  -> expression ";" ;
+printStmt -> "print" expression ";" ;
+#+end_src
