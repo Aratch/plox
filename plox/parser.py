@@ -3,6 +3,7 @@
 from .error import error
 from .token import Token, TokenType
 from .expr import *
+from .stmt import *
 from typing import Callable
 
 globals().update(TokenType.__members__)
@@ -16,6 +17,12 @@ class Parser:
         self.current : int = 0
 
     def parse(self) -> Expr | None:
+        try:
+            return self.expression()
+        except ParseError:
+            return None
+
+    def parse_single_expr(self) -> Expr | None:
         try:
             return self.expression()
         except ParseError:

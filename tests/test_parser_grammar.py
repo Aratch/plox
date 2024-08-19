@@ -41,7 +41,7 @@ class TestParserGrammar(unittest.TestCase):
         scanner = Scanner(source)
         tokens: list[Token] = scanner.scan_tokens()
         parser = Parser(tokens)
-        expression: Expr | None = parser.parse()
+        expression: Expr | None = parser.parse_single_expr()
         return expression
 
     def test_string_literal(self):
