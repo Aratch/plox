@@ -86,11 +86,16 @@ class Parser:
     ## Expression parsing
 
     def expression(self) -> Expr:
-        # XXX: Restore this to sidestep potentially problematic sequence operator
+        # DONE: Restore this to sidestep potentially problematic sequence operator
+        # (this broke the tests, but oh well)
         # return self.equality()
-        return self.sequence()
+        return self.assignment()
+        # XXX: Restore call to self.sequence() when I'm sure that
+        # the textbook implementation is actually working
+        # return self.sequence()
 
 
+    # TODO: Check if a functional generator would even make sense
     # def __binary(self, rule, preceding, tokens) -> Callable:
     #     def fun():
     #         expr = Expr()
@@ -105,6 +110,21 @@ class Parser:
             operator : Token = self.previous()
             right : Expr = self.ternary()
             expr = Binary(expr, operator, right)
+
+        return expr
+
+    def assignment(self) -> Expr:
+        expr: Expr = self.equality()
+
+        if self.match(EQUAL):
+            equals: Token = self.previous()
+            value: Expr = self.assignment()
+
+            if isinstance(expr, Variable):
+                name = expr.name
+                return Assign(name, value)
+
+            error(equals, "Invalid assignment target.")
 
         return expr
 

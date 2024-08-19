@@ -55,3 +55,51 @@ primary    -> NUMBER | STRING | "true" | "false" | "nil"
             | "(" expression ")"
             | IDENTIFIER ;
 #+end_src
+
+* 8.4.1 Assignment
+
+#+begin_src bnf
+program     -> declaration* EOF ;
+
+declaration -> varDecl
+            | statement ;
+
+varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
+
+[...]
+
+// Verbatim quote from 8.4.1
+expresson   -> assignment ;
+assignment  -> IDENTIFIER "=" assignment
+            | equality ;
+// ^
+// |
+// -- In this case, assignment has the lowest precedence, as in C
+// but this is only the case because we're ignoring the comma sequence operator
+
+// The following is with both ',' sequence and ternary conditional operators in mind
+expression  -> sequence ;
+sequence    -> assignment ( "," assignment )* ;
+assignment  -> IDENTIFIER "=" assignment
+            | ternary ;
+ternary    -> equality ( "?" expression ":" ternary )* ;
+equality   -> comparison ( ( "!=" | "==" ) comparison )* ;
+#+end_src
+
+Is this correct? /I have no idea./
+
+Does it make sense that you can chain assignments in this grammar indefinitely?
+
+#+begin_src lox
+a = b = c = d
+#+end_src
+
+Kind of.
+
+Does it make sense that you can directly chain ternary conditionals within an assignment?
+
+#+begin_src lox
+a = b = c > d ? "foo" : "bar"
+#+end_src
+
+...why not, actually?

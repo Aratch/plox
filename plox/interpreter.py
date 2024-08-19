@@ -105,6 +105,12 @@ class Interpreter:
 
     # Expression methods (superclass Expr)
 
+    @visitor(Assign)
+    def visit(self, expr: Assign):
+        value = self.evaluate(expr.value)
+        self.environment.assign(expr.name, value)
+        return value
+
     @visitor(Literal)
     def visit(self, expr: Literal):
         return expr.value
