@@ -67,7 +67,7 @@ class Interpreter:
 
     @visitor(Grouping)
     def visit(self, expr: Grouping):
-        self.evaluate(expr.expression)
+        return self.evaluate(expr.expression)
 
     @visitor(Unary)
     def visit(self, expr: Unary):
