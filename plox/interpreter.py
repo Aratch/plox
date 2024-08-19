@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
+from .environment import Environment
 from .error import runtime_error
 from .token import Token, TokenType
-from .expr import Expr, Binary, Grouping, Unary, Literal, Ternary
+from .expr import *
 from .stmt import *
 from .visitor import visitor
 import math
@@ -55,6 +56,9 @@ def stringify(obj):
 
 
 class Interpreter:
+    def __init__(self):
+        self.environment = Environment()
+
     def interpret(self, statements: list[Stmt]):
         try:
             for statement in statements:
@@ -76,6 +80,8 @@ class Interpreter:
     def evaluate(self, expr: Expr):
         return self.visit(expr)
 
+    # Statement methods (superclass Stmt)
+
     @visitor(Expression)
     def visit(self, stmt: Expression):
         self.evaluate(stmt.expression)
@@ -86,6 +92,18 @@ class Interpreter:
         value = self.evaluate(stmt.expression)
         print(stringify(value))
         return None
+
+    @visitor(Var)
+    def visit(self, stmt: Var):
+        value = None
+        if stmt.initializer != None:
+            value = self.evaluate(stmt.initializer)
+
+        self.environment.define(stmt.name.lexeme, value)
+
+        return None
+
+    # Expression methods (superclass Expr)
 
     @visitor(Literal)
     def visit(self, expr: Literal):
@@ -108,6 +126,10 @@ class Interpreter:
 
         # Unreachable
         return None
+
+    @visitor(Variable)
+    def visit(self, expr: Variable):
+        return self.environment.get(expr.name)
 
     @visitor(Binary)
     def visit(self, expr: Binary):

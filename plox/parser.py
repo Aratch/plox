@@ -20,10 +20,11 @@ class Parser:
         statements: list[Stmt] = []
 
         while not self.is_at_end():
-            statements.append(self.statement())
+            statements.append(self.declaration())
 
         return statements
 
+    # TODO: Delete this at some point
     def parse_single_expr(self) -> Expr | None:
         try:
             return self.expression()
@@ -44,6 +45,29 @@ class Parser:
     def previous(self) -> Token:
         return self.tokens[self.current - 1]
 
+
+    ## Statement parsing
+
+    def declaration(self) -> Stmt:
+        try:
+            if self.match(VAR):
+                return self.var_declaration()
+
+            return self.statement()
+        except ParseError as error:
+            self.synchronize()
+            return None
+
+    def var_declaration(self) -> Stmt:
+        name : Token = self.consume(IDENTIFIER, "Expected variable name.")
+
+        initializer : Expr = None
+        if self.match(EQUAL):
+            initializer = self.expression()
+
+        self.consume(SEMICOLON, "Expected ';' after variable declaration.")
+        return Var(name, initializer)
+
     def statement(self) -> Stmt:
         if self.match(PRINT):
             return self.print_statement()
@@ -58,6 +82,8 @@ class Parser:
         expr: Expr = self.expression()
         self.consume(SEMICOLON, "Expected ';' after expression.")
         return Expression(expr)
+
+    ## Expression parsing
 
     def expression(self) -> Expr:
         # XXX: Restore this to sidestep potentially problematic sequence operator
@@ -155,6 +181,8 @@ class Parser:
             return Literal(None)
         if self.match(NUMBER, STRING):
             return Literal(self.previous().literal)
+        if self.match(IDENTIFIER):
+            return Variable(self.previous())
 
         if self.match(LEFT_PAREN):
             expr : Expr = self.expression()

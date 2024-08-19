@@ -33,3 +33,7 @@ class Ternary(Expr):
     left: Expr
     right: Expr
 
+@dataclass
+class Variable(Expr):
+    name: Token
+

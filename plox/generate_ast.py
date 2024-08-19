@@ -66,7 +66,8 @@ def main(argv: list):
         "Grouping : Expr expression",
         "Literal  : object value",
         "Unary    : Token operator, Expr right",
-        "Ternary  : Token operator, Expr condition, Expr left, Expr right"
+        "Ternary  : Token operator, Expr condition, Expr left, Expr right",
+        "Variable : Token name"
     ])
 
     define_ast(output_dir, "Stmt", [
