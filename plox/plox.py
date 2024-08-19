@@ -2,6 +2,8 @@
 
 import sys
 import readline
+
+from .stmt import Stmt
 from .interpreter import Interpreter
 from .parser import Parser
 from .ast_printer import AstPrinter
@@ -19,7 +21,7 @@ class Plox:
         scanner = Scanner(source)
         tokens: list[Token] = scanner.scan_tokens()
         parser = Parser(tokens)
-        expression: Expr | None = parser.parse()
+        statements: list[Stmt] = parser.parse()
 
         if not Plox.interpreter:
             Plox.interpreter = Interpreter()
@@ -28,9 +30,9 @@ class Plox:
             return
 
         # Make pyright shut the hell up
-        if expression:
+        if statements:
             # print(AstPrinter().print(expression))
-            Plox.interpreter.interpret(expression)
+            Plox.interpreter.interpret(statements)
 
     def run_file(self, path: str):
         with open(path, "r") as f:

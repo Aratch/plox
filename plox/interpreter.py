@@ -3,6 +3,7 @@
 from .error import runtime_error
 from .token import Token, TokenType
 from .expr import Expr, Binary, Grouping, Unary, Literal, Ternary
+from .stmt import *
 from .visitor import visitor
 import math
 
@@ -54,7 +55,18 @@ def stringify(obj):
 
 
 class Interpreter:
-    def interpret(self, expression: Expr):
+    def interpret(self, statements: list[Stmt]):
+        try:
+            for statement in statements:
+                self.execute(statement)
+        except PloxRuntimeError as error:
+            runtime_error(error)
+
+    def execute(self, stmt: Stmt):
+        self.visit(stmt)
+
+    # Keep this for now
+    def interpret_single_expr(self, expression: Expr):
         try:
             value = self.evaluate(expression)
             print(stringify(value))
@@ -63,6 +75,17 @@ class Interpreter:
 
     def evaluate(self, expr: Expr):
         return self.visit(expr)
+
+    @visitor(Expression)
+    def visit(self, stmt: Expression):
+        self.evaluate(stmt.expression)
+        return None
+
+    @visitor(Print)
+    def visit(self, stmt: Print):
+        value = self.evaluate(stmt.expression)
+        print(stringify(value))
+        return None
 
     @visitor(Literal)
     def visit(self, expr: Literal):

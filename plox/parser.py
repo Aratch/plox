@@ -16,11 +16,13 @@ class Parser:
         self.tokens : list[Token] = tokens
         self.current : int = 0
 
-    def parse(self) -> Expr | None:
-        try:
-            return self.expression()
-        except ParseError:
-            return None
+    def parse(self) -> list[Stmt]:
+        statements: list[Stmt] = []
+
+        while not self.is_at_end():
+            statements.append(self.statement())
+
+        return statements
 
     def parse_single_expr(self) -> Expr | None:
         try:
@@ -41,6 +43,21 @@ class Parser:
 
     def previous(self) -> Token:
         return self.tokens[self.current - 1]
+
+    def statement(self) -> Stmt:
+        if self.match(PRINT):
+            return self.print_statement()
+        return self.expression_statement()
+
+    def print_statement(self):
+        value: Expr = self.expression()
+        self.consume(SEMICOLON, "Expected ';' after value.")
+        return Print(value)
+
+    def expression_statement(self):
+        expr: Expr = self.expression()
+        self.consume(SEMICOLON, "Expected ';' after expression.")
+        return Expression(expr)
 
     def expression(self) -> Expr:
         # XXX: Restore this to sidestep potentially problematic sequence operator
