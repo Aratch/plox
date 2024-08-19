@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from .error import runtime_error
 from .token import Token, TokenType
 from .expr import Expr, Binary, Grouping, Unary, Literal, Ternary
 from .visitor import visitor
@@ -21,6 +22,7 @@ def is_equal(a, b):
 class PloxRuntimeError(RuntimeError):
     def __init__(self, token: Token, message: str) -> None:
         super().__init__(message)
+        self.message = message
         self.token = token
 
 # Unary checker
@@ -33,6 +35,8 @@ def check_number_operands(operator: Token, left, right):
     if isinstance(left, float) and isinstance(right, float):
         return
     raise PloxRuntimeError(operator, "Operands must be numbers.")
+
+# TODO: Ternary checker
 
 def stringify(obj):
     if object == None: return "nil"
@@ -47,12 +51,12 @@ def stringify(obj):
 
 
 class Interpreter:
-    def interpret(expression: expr):
+    def interpret(self, expression: Expr):
         try:
             value = self.evaluate(expression)
             print(stringify(value))
-        except PloxRuntimeError:
-            pass
+        except PloxRuntimeError as error:
+            runtime_error(error)
 
     def evaluate(self, expr: Expr):
         return self.visit(expr)
@@ -120,3 +124,5 @@ class Interpreter:
 
         # Unreachable
         return None
+
+    # TODO: Ternary method
