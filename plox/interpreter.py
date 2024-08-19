@@ -110,8 +110,11 @@ class Interpreter:
                     return float(left) + float(right)
                 if isinstance(left, str) and isinstance(right, str):
                     return str(left) + str(right)
+                # If left and right are either but not the same
+                if isinstance(left, (str, float)) and isinstance(right, (str, float)):
+                    return stringify(left) + stringify(right)
                 raise PloxRuntimeError(expr.operator,
-                                       "Operands must be two numbers or two strings.")
+                                       "Operands must be two numbers or two strings, or either of each.")
             case TokenType.SLASH:
                 check_number_operands(expr.operator, left, right)
                 return float(left) / float(right)
