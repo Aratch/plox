@@ -42,7 +42,10 @@ class Plox:
 
     def run_prompt(self):
         while True:
-            line : str = input("> ")
-            if line == "": break
-            self.run(line)
-            Plox.had_error = False
+            try:
+                line : str = input("> ")
+                if line == "": break
+                self.run(line)
+                Plox.had_error = False
+            except EOFError:
+                sys.exit(0)
