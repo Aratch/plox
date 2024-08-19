@@ -21,7 +21,15 @@ class Plox:
         scanner = Scanner(source)
         tokens: list[Token] = scanner.scan_tokens()
         parser = Parser(tokens)
-        statements: list[Stmt] = parser.parse()
+
+        statements: list[Stmt] = []
+        expr: Expr | None = None
+
+        # XXX: This assumes single lines
+        if source.strip().endswith(";"):
+            statements: list[Stmt] = parser.parse()
+        else:
+            expr: Expr | None = parser.parse_single_expr()
 
         if not Plox.interpreter:
             Plox.interpreter = Interpreter()
@@ -33,6 +41,9 @@ class Plox:
         if statements:
             # print(AstPrinter().print(expression))
             Plox.interpreter.interpret(statements)
+
+        elif expr:
+            print(Plox.interpreter.evaluate(expr))
 
     def run_file(self, path: str):
         with open(path, "r") as f:
