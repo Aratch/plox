@@ -16,3 +16,8 @@ class Expression(Stmt):
 class Print(Stmt):
     expression: Expr
 
+@dataclass
+class Var(Stmt):
+    name: Token
+    initializer: Expr = None
+

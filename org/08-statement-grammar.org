@@ -24,11 +24,34 @@ We start with two kinds of statements:
 2. =print= *statements*
 
 #+begin_src bnf
-program -> statement* EOF ;
+program   -> statement* EOF ;
 
 statement -> exprStmt
           | printStmt ;
 
 exprStmt  -> expression ";" ;
 printStmt -> "print" expression ";" ;
+#+end_src
+
+* 8.2 Variables
+
+#+begin_src bnf
+program     -> declaration* EOF ;
+
+declaration -> varDecl
+            | statement ;
+
+varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
+
+statement   -> exprStmt
+            | printStmt ;
+
+exprStmt    -> expression ";" ;
+printStmt   -> "print" expression ";" ;
+
+[...]
+
+primary    -> NUMBER | STRING | "true" | "false" | "nil"
+            | "(" expression ")"
+            | IDENTIFIER ;
 #+end_src

@@ -18,8 +18,12 @@ def define_type(writer: Callable, base_name: str, class_name: str, field_str: st
     write(f"class {class_name}({base_name}):")
     if len(fields) >= 1:
         for field in fields:
-            field_type, field_name = field.split(" ")
-            write(f"{field_name}: {field_type}", 1)
+            if "=" in field:
+                field_type, field_name, _, default_value = field.split(" ")
+                write(f"{field_name}: {field_type} = {default_value}", 1)
+            else:
+                field_type, field_name = field.split(" ")
+                write(f"{field_name}: {field_type}", 1)
     else:
         write(f"pass", 1)
     write()
@@ -67,9 +71,10 @@ def main(argv: list):
 
     define_ast(output_dir, "Stmt", [
         "Expression : Expr expression",
-        "Print      : Expr expression"
+        "Print      : Expr expression",
+        "Var        : Token name, Expr initializer = None"
     ],
-               ["from .expr import Expr"])
+    ["from .expr import Expr"])
 
 if __name__ == '__main__':
     main(sys.argv[1:])
