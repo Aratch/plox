@@ -4,6 +4,7 @@ from .error import runtime_error
 from .token import Token, TokenType
 from .expr import Expr, Binary, Grouping, Unary, Literal, Ternary
 from .visitor import visitor
+import math
 
 def is_truthy(obj):
     if obj == None: return False
@@ -33,6 +34,8 @@ def check_number_operand(operator: Token, operand):
 # Binary checker
 def check_number_operands(operator: Token, left, right):
     if isinstance(left, float) and isinstance(right, float):
+        if math.isclose(right, 0.0):
+            raise PloxRuntimeError(operator, "Attempting division by zero.")
         return
     raise PloxRuntimeError(operator, "Operands must be numbers.")
 
