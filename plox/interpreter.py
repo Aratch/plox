@@ -143,6 +143,18 @@ class Interpreter:
     def visit(self, expr: Literal):
         return expr.value
 
+    @visitor(Logical)
+    def visit(self, expr: Logical):
+        left = self.evaluate(expr.left)
+
+        if expr.operator.type == TokenType.OR:
+            if is_truthy(left): return left
+        else:
+            if not is_truthy(left): return left
+
+        return self.evaluate(expr.right)
+
+
     @visitor(Grouping)
     def visit(self, expr: Grouping):
         return self.evaluate(expr.expression)

@@ -11,3 +11,16 @@ statement -> exprStmt
 ifStmt    -> "if" "(" expression ")" statement
              ( "else" statement )? ;
 #+end_src
+
+* 9.3 Logical Operators
+
+Semantic gotcha: Logical =and= and =or= operators *short-circuit*.
+
+#+begin_src bnf
+expression -> assignment ;
+assignment -> IDENTIFIER "=" assignment
+           | logic_or ;
+
+logic_or   -> logic_and ( "or" logic_and )* ;
+logic_and  -> equality ( "and" equality )* ;
+#+end_src

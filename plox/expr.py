@@ -27,6 +27,12 @@ class Literal(Expr):
     value: object
 
 @dataclass
+class Logical(Expr):
+    left: Expr
+    operator: Token
+    right: Expr
+
+@dataclass
 class Unary(Expr):
     operator: Token
     right: Expr
