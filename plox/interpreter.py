@@ -54,6 +54,7 @@ def stringify(obj):
 
     return str(obj)
 
+Uninitialized = object()
 
 class Interpreter:
     def __init__(self):
@@ -112,7 +113,8 @@ class Interpreter:
 
     @visitor(Var)
     def visit(self, stmt: Var):
-        value = None
+        # Use unique value instead of None to catch uninitialised variables
+        value = Uninitialized
         if stmt.initializer != None:
             value = self.evaluate(stmt.initializer)
 

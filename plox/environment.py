@@ -12,6 +12,8 @@ class Environment:
         self.__values[name] = value
 
     def assign(self, name: Token, value):
+        from .interpreter import PloxRuntimeError
+
         if name.lexeme in self.__values:
             self.__values[name.lexeme] = value
             return
@@ -20,17 +22,20 @@ class Environment:
             self.enclosing.assign(name, value)
             return
 
-        from .interpreter import PloxRuntimeError
         raise PloxRuntimeError(name,
                                f"Undefined variable {name.lexeme}.")
 
     def get(self, name: Token):
+        from .interpreter import PloxRuntimeError, Uninitialized
+
         if name.lexeme in self.__values:
+            if self.__values[name.lexeme] == Uninitialized:
+                raise PloxRuntimeError(name,
+                                       f"Uninitialized variable '{name.lexeme}'")
             return self.__values[name.lexeme]
 
         if self.enclosing:
             return self.enclosing.get(name)
 
-        from .interpreter import PloxRuntimeError
         raise PloxRuntimeError(name,
                                f"Undefined variable '{name.lexeme}'.")
