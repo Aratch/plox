@@ -17,7 +17,7 @@ class Plox:
     had_runtime_error = False
     interpreter = None
 
-    def run(self, source: str):
+    def run(self, source: str, in_repl = False):
         scanner = Scanner(source)
         tokens: list[Token] = scanner.scan_tokens()
         parser = Parser(tokens)
@@ -26,10 +26,14 @@ class Plox:
         expr: Expr | None = None
 
         # XXX: This assumes single lines
-        if source.strip().endswith(";"):
-            statements: list[Stmt] = parser.parse()
+        # FIXME: This bugs, obviously. As expected from bad design, see note above.
+        if in_repl:
+            if source.strip().endswith(";"):
+                statements: list[Stmt] = parser.parse()
+            else:
+                expr: Expr | None = parser.parse_single_expr()
         else:
-            expr: Expr | None = parser.parse_single_expr()
+            statements: list[Stmt] = parser.parse()
 
         if not Plox.interpreter:
             Plox.interpreter = Interpreter()
