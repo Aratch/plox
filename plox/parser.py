@@ -69,11 +69,25 @@ class Parser:
         return Var(name, initializer)
 
     def statement(self) -> Stmt:
+        if self.match(IF):
+            return self.if_statement()
         if self.match(PRINT):
             return self.print_statement()
         if self.match(LEFT_BRACE):
             return Block(self.block())
         return self.expression_statement()
+
+    def if_statement(self) -> Stmt:
+        self.consume(LEFT_PAREN, "Expected '(' after 'if'.")
+        condition: Expr = self.expression()
+        self.consume(RIGHT_PAREN, "Expected ')' after if condition.")
+
+        thenBranch: Stmt = self.statement()
+        elseBranch: Stmt | None = None
+        if self.match(ELSE):
+            elseBranch = self.statement()
+
+        return If(condition, thenBranch, elseBranch)
 
     def block(self) -> list[Stmt]:
         statements: list[Stmt] = []

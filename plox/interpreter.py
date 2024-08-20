@@ -105,6 +105,15 @@ class Interpreter:
         self.evaluate(stmt.expression)
         return None
 
+    @visitor(If)
+    def visit(self, stmt: If):
+        if is_truthy(self.evaluate(stmt.condition)):
+            self.execute(stmt.then_branch)
+        elif stmt.else_branch:
+            self.execute(stmt.else_branch)
+
+        return None
+
     @visitor(Print)
     def visit(self, stmt: Print):
         value = self.evaluate(stmt.expression)
