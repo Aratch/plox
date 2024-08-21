@@ -27,7 +27,8 @@ class Scanner:
         "this": THIS,
         "true": TRUE,
         "var": VAR,
-        "while": WHILE
+        "while": WHILE,
+        "break": BREAK
     }
 
     def __init__(self, source: str):

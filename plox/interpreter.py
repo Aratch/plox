@@ -28,6 +28,9 @@ class PloxRuntimeError(RuntimeError):
         self.message = message
         self.token = token
 
+class LoopBreakException(PloxRuntimeError):
+    pass
+
 # Unary checker
 def check_number_operand(operator: Token, operand):
     if isinstance(operand, float): return
@@ -134,9 +137,16 @@ class Interpreter:
     @visitor(While)
     def visit(self, stmt: While):
         while is_truthy(self.evaluate(stmt.condition)):
-            self.execute(stmt.body)
+            try:
+                self.execute(stmt.body)
+            except LoopBreakException:
+                return None
 
         return None
+
+    @visitor(Break)
+    def visit(self, stmt: Break):
+        raise LoopBreakException(stmt.token, "'break' statements are only allowed inside loops.")
 
     # Expression methods (superclass Expr)
 

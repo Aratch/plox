@@ -78,6 +78,8 @@ class Parser:
         return While(condition, body)
 
     def statement(self) -> Stmt:
+        if self.match(BREAK):
+            return self.break_statement()
         if self.match(FOR):
             return self.for_statement()
         if self.match(IF):
@@ -89,6 +91,11 @@ class Parser:
         if self.match(LEFT_BRACE):
             return Block(self.block())
         return self.expression_statement()
+
+    def break_statement(self) -> Stmt:
+        token: Token = self.previous()
+        self.consume(SEMICOLON, "Expected ';' after 'break'.")
+        return Break(token)
 
     def for_statement(self) -> Stmt:
         self.consume(LEFT_PAREN, "Expected '(' after 'for'.")

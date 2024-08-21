@@ -78,7 +78,8 @@ def main(argv: list):
         "If         : Expr condition, Stmt then_branch, Stmt else_branch",
         "Print      : Expr expression",
         "Var        : Token name, Expr initializer = None",
-        "While      : Expr condition, Stmt body"
+        "While      : Expr condition, Stmt body",
+        "Break      : Token token"
     ],
     ["from .expr import Expr"])
 

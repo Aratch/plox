@@ -245,7 +245,7 @@ Instead, do all the execution and error handling in the interpreter?
         #+end_src
   4. =Parser.break_statement()=:
        #+begin_src python
-    def print_statement(self):
+    def break_statement(self):
         token: Token = self.previous()
         self.consume(SEMICOLON, "Expected ';' after 'break'.")
         return Break(token) # from stmt import Break
@@ -284,4 +284,8 @@ class LoopBreakException(Exception):
     #+end_src
 
 
-  Badabing, badaboom. This should work?
+Badabing, badaboom. This should work?
+
+Slight change: Maybe =LoopBreakException= /should/ inherit from =PloxRuntimeError=. Loop statements only catch this specific type of error, so in case of misuse, it would bubble up regardless, so the changes in =8.= would be unnecessary.
+
+Hit a Snag: This implementation just continues the loop as-is? Should return after excepting.
