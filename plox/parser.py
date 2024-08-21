@@ -68,11 +68,21 @@ class Parser:
         self.consume(SEMICOLON, "Expected ';' after variable declaration.")
         return Var(name, initializer)
 
+    def while_statement(self) -> Stmt:
+        self.consume(LEFT_PAREN, "Expected '(' after 'while'.")
+        condition: expr = self.expression()
+        self.consume(RIGHT_PAREN, "Expected ')' after condition.")
+        body: Stmt = self.statement()
+
+        return While(condition, body)
+
     def statement(self) -> Stmt:
         if self.match(IF):
             return self.if_statement()
         if self.match(PRINT):
             return self.print_statement()
+        if self.match(WHILE):
+            return self.while_statement()
         if self.match(LEFT_BRACE):
             return Block(self.block())
         return self.expression_statement()

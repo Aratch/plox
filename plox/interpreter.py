@@ -131,6 +131,13 @@ class Interpreter:
 
         return None
 
+    @visitor(While)
+    def visit(self, stmt: While):
+        while is_truthy(self.evaluate(stmt.condition)):
+            self.execute(stmt.body)
+
+        return None
+
     # Expression methods (superclass Expr)
 
     @visitor(Assign)

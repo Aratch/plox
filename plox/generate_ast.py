@@ -77,7 +77,8 @@ def main(argv: list):
         "Expression : Expr expression",
         "If         : Expr condition, Stmt then_branch, Stmt else_branch",
         "Print      : Expr expression",
-        "Var        : Token name, Expr initializer = None"
+        "Var        : Token name, Expr initializer = None",
+        "While      : Expr condition, Stmt body"
     ],
     ["from .expr import Expr"])
 

@@ -31,3 +31,8 @@ class Var(Stmt):
     name: Token
     initializer: Expr = None
 
+@dataclass
+class While(Stmt):
+    condition: Expr
+    body: Stmt
+
