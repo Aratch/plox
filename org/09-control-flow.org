@@ -62,3 +62,226 @@ varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
 The implementation is going to involve *desugaring*, or simply translating the construct into existing building blocks (since =for= loops can just as well be written as unpleasant =while= statements).
 
 As per 9.5.1, this means *no new parser node*.
+
+* Challenges
+
+** Branching using first-class functions and dynamic dispatch instead of branching statements
+#+begin_quote
+A few chapters from now, when Lox supports first-class functions and dynamic dispatch, we technically won’t need branching statements built into the language. Show how conditional execution can be implemented in terms of those. Name a language that uses this technique for its control flow.
+#+end_quote
+
+First thought: No clue.
+
+Maybe define built-in functions à la
+
+#+begin_src python
+
+def func_if(cond, f_true, f_false):
+    if cond:
+        evaluate(f_true)
+    else:
+        evaluate(f_false)
+#+end_src
+
+But as the language's own function types. Dynamic dispatch takes care of evaluating the correct f_* methods? I don't know.
+
+** Looping implemented in first-class functions
+#+begin_quote
+Likewise, looping can be implemented using those same tools, provided our interpreter supports an important optimization. What is it, and why is it necessary? Name a language that uses this technique for iteration.
+#+end_quote
+
+Beats me.
+
+** Break statement
+:PROPERTIES:
+:ID:       81bafebb-3dc9-46b4-8411-4ad5ad1204c9
+:END:
+#+begin_quote
+Unlike Lox, most other C-style languages also support break and continue statements inside loops. Add support for break statements.
+
+The syntax is a break keyword followed by a semicolon. It should be a syntax error to have a break statement appear outside of any enclosing loop. At runtime, a break statement causes execution to jump to the end of the nearest enclosing loop and proceeds from there. Note that the break may be nested inside other blocks and if statements that also need to be exited.
+#+end_quote
+
+(/Rambly stream of consciousness warning/)
+
+This might be tricky because this requires some kind of state tracking or state unraveling? (or the Pythonic way: just use Exceptions!)
+
+There's two separate things to keep track of:
+
+  1. (Parser) Is the =break;= statement inside a loop? Syntax Error if not.
+  2. (Interpreter) Did we just hit a =break=? Jump to the end of the neareast enclosing loop.
+
+That's how I would probably do it in an ad-hoc manner:
+
+  1. Add =BREAK= to =TokenType= enum and ="break" : BREAK= to keywords dict.
+  2. Add a check for =BREAK= tokens in Parser.statement():
+
+      #+begin_src python
+    def statement(self) -> Stmt:
+        if self.match(BREAK):
+            # Do I need a separate method? I think so...
+            return self.break_statement()
+      #+end_src
+  3. ??? (this is where my idea breaks down for now)
+
+For reference: The C grammar defines a category called =jump-statement=, which contains the =goto=, =continue=, =break=, and =return= keywords.
+
+So if we were to model it in an analogous way, we'd need a new =Stmt= subclass. At first glance, this =Break= class might need some kind of dependency injection -- but no: exceptions will be enough, I think.
+
+  1. Add =BREAK= to =TokenType= enum and ="break" : BREAK= to keywords dict.
+  2. Add a check for =BREAK= tokens in =Parser.statement()=:
+
+         #+begin_src python
+    def statement(self) -> Stmt:
+        if self.match(BREAK):
+            return self.break_statement()
+        #+end_src
+  3. Add a =Stmt= subclass called =Break= to =generate_ast.py= (including a stub field because I'm too lazy to rewrite the script to accomodate "empty" classes):
+        #+begin_src python
+    define_ast(output_dir, "Stmt", [
+        "Block      : list[Stmt] statements",
+        "Expression : Expr expression",
+        "If         : Expr condition, Stmt then_branch, Stmt else_branch",
+        "Print      : Expr expression",
+        "Var        : Token name, Expr initializer = None",
+        "While      : Expr condition, Stmt body",
+        "Break      : Stmt stub = None"
+    ],
+    ["from .expr import Expr"])
+        #+end_src
+  4. =Parser.break_statement()= will be straightforward:
+       #+begin_src python
+    def print_statement(self):
+        self.consume(SEMICOLON, "Expected ';' after 'break'.")
+        return Break() # from stmt import Break
+       #+end_src
+
+But wait, we haven't even gone on to fulfilling requirement =1.= for our parser implementation yet.
+
+The =Parser= doesn't really have internal state tracking, a call to =parse()= simply causes a cascade of appropriate method calls (sometimes recursively), returning a list of statements in the end.
+
+Both =while= and =for= loop statements simply call =Parser.statement()= again to parse their body:
+
+#+begin_src python
+        body: Stmt = self.statement()
+#+end_src
+
+/There is no space/ for dependency injection in this design. *Exceptions it is*.
+
+  5. [@5] Define a =BreakStatementException= in =parser.py= (but make it inherit from =ParseError= for easier handling):
+        #+begin_src python
+class BreakStatementException(ParseError):
+    pass
+        #+end_src
+  6. Raise =BreakStatementException= when parsing a =break= statement:
+       #+begin_src python
+    def break_statement(self):
+        raise BreakStatementException
+        self.consume(SEMICOLON, "Expected ';' after 'break'.")
+        return Break() # from stmt import Break
+       #+end_src
+  7. Modify the =for_statement()= and =while_statement()= methods to ignore this exception when parsing the body.
+        #+begin_src python
+    def while_statement(self) -> Stmt:
+        self.consume(LEFT_PAREN, "Expected '(' after 'while'.")
+        condition: expr = self.expression()
+        self.consume(RIGHT_PAREN, "Expected ')' after condition.")
+        try:
+            body: Stmt = self.statement()
+        except BreakStatementException:
+            pass
+
+        return While(condition, body)
+        #+end_src
+
+But this halts processing of =self.statement()= mid-way, this is not what we want.
+
+So we don't have a method of raising a syntax error within the parser without some significant amount of lookahead, or rather, lookbehind, something along the lines of:
+
+#+begin_src python
+    def break_statement(self):
+        if not self.are_we_in_loop():
+            raise ParseError
+        self.consume(SEMICOLON, "Expected ';' after 'break'.")
+        return Break() # from stmt import Break
+#+end_src
+
+Where =Parser.are_we_in_loop()= is something along the lines of
+#+begin_src python
+    # for ( ; ; ) STATEMENT
+    # while (  ) STATEMENT
+    # for ( ; ; ) { BLOCK }
+    # while (  ) { STATEMENT }
+    def are_we_in_loop(self):
+        for i in range(self.current - 1, -1, -1):
+            LOOK BACK FOR UNCLOSED FOR/WHILE LOOP
+        return False
+#+end_src
+
+I've done this before, this is disgusting, messy, brittle.
+
+Instead, do all the execution and error handling in the interpreter?
+
+  1. Add =BREAK= to =TokenType= enum and ="break" : BREAK= to keywords dict.
+  2. Add a check for =BREAK= tokens in =Parser.statement()=:
+
+         #+begin_src python
+    def statement(self) -> Stmt:
+        if self.match(BREAK):
+            return self.break_statement()
+        #+end_src
+  3. Add a =Stmt= subclass called =Break= to =generate_ast.py= (but *not* with a stub field, but the =Token= instead!):
+        #+begin_src python
+    define_ast(output_dir, "Stmt", [
+        "Block      : list[Stmt] statements",
+        "Expression : Expr expression",
+        "If         : Expr condition, Stmt then_branch, Stmt else_branch",
+        "Print      : Expr expression",
+        "Var        : Token name, Expr initializer = None",
+        "While      : Expr condition, Stmt body",
+        "Break      : Token token"
+    ],
+    ["from .expr import Expr"])
+        #+end_src
+  4. =Parser.break_statement()=:
+       #+begin_src python
+    def print_statement(self):
+        token: Token = self.previous()
+        self.consume(SEMICOLON, "Expected ';' after 'break'.")
+        return Break(token) # from stmt import Break
+       #+end_src
+  5. Define a =LoopBreakException= in =interpreter.py= (*and store the token!*):
+        #+begin_src python
+class LoopBreakException(Exception):
+    def __init__(self, token: Token):
+        self.token = token
+        #+end_src
+  6. The =visit= method for =Break= statements will simply raise this exception:
+    #+begin_src python
+    @visitor(Break)
+    def visit(self, stmt: Break):
+        raise LoopBreakException
+    #+end_src
+  7. The =visit= method for =While= statements meanwhile will simply stop executing the body once we hit a break statement by catching the =LoopBreakException=:
+    #+begin_src python
+    @visitor(While)
+    def visit(self, stmt: While):
+        while is_truthy(self.evaluate(stmt.condition)):
+            try:
+                self.execute(stmt.body)
+            except LoopBreakException:
+                pass
+
+        return None
+    #+end_src
+  8. When uncaught, the =LoopBreakException= will trigger a =PloxRuntimeError= in =Interpreter.execute()=:
+    #+begin_src python
+    def execute(self, stmt: Stmt):
+        try:
+            self.visit(stmt)
+        except LoopBreakException as e:
+            raise PloxRuntimeError(e.token, "'break' statements are only allowed inside loops.")
+    #+end_src
+
+
+  Badabing, badaboom. This should work?

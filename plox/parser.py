@@ -54,6 +54,7 @@ class Parser:
                 return self.var_declaration()
 
             return self.statement()
+
         except ParseError as error:
             self.synchronize()
             return None
@@ -178,6 +179,7 @@ class Parser:
     #         right = Expr()
     #     return fun
 
+    # TODO: Re-activate and implement this in Interpreter
     def sequence(self) -> Expr:
         # XXX: Restore direct calls to self.equality() 
         expr : Expr = self.ternary()
@@ -224,8 +226,7 @@ class Parser:
 
         return expr
 
-    # XXX: Require + 2.0s from plox.expr import Ternary
-    # *and* regenerate ast
+    # TODO: Re-activate and implement this in Interpreter
     def ternary(self) -> Expr:
         expr : Expr = self.equality()
 
