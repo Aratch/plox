@@ -36,3 +36,29 @@ statement -> exprStmt
 
 whileStmt -> "while" "(" expression ")" statement ;
 #+end_src
+
+* 9.5 For Loops
+
+#+begin_src bnf
+statement -> exprStmt
+             | forStmt
+             | ifStmt
+             | printStmt
+             | whileStmt
+             | block ;
+
+forStmt   -> "for" "(" varDecl | exprStmt | ";" ")" )
+             expression? ";"
+             expression? ")" statement ;
+#+end_src
+
+As a reminder, =varDecl= and =exprStmt= are:
+
+#+begin_src bnf
+exprStmt    -> expression ";" ;
+varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
+#+end_src
+
+The implementation is going to involve *desugaring*, or simply translating the construct into existing building blocks (since =for= loops can just as well be written as unpleasant =while= statements).
+
+As per 9.5.1, this means *no new parser node*.

@@ -77,6 +77,8 @@ class Parser:
         return While(condition, body)
 
     def statement(self) -> Stmt:
+        if self.match(FOR):
+            return self.for_statement()
         if self.match(IF):
             return self.if_statement()
         if self.match(PRINT):
@@ -86,6 +88,45 @@ class Parser:
         if self.match(LEFT_BRACE):
             return Block(self.block())
         return self.expression_statement()
+
+    def for_statement(self) -> Stmt:
+        self.consume(LEFT_PAREN, "Expected '(' after 'for'.")
+
+        initializer: Stmt | None = None
+        if self.match(SEMICOLON):
+            initializer = None # redundant, but at least explicit
+        elif self.match(VAR):
+            initializer = self.var_declaration()
+        else:
+            initializer = self.expression_statement()
+
+        condition: Expr | None = None
+        if not self.check(SEMICOLON):
+            condition = self.expression()
+        self.consume(SEMICOLON, "Expected ';' after loop condition.")
+
+        increment: Expr | None = None
+        if not self.check(RIGHT_PAREN):
+            increment = self.expression()
+        self.consume(RIGHT_PAREN, "Expected ')' after for clauses.")
+
+        body: Stmt = self.statement();
+
+        if increment:
+            body = Block([
+                body,
+                Expression(increment)
+            ])
+
+        if condition == None:
+            condition = Literal(True)
+
+        body = While(condition, body)
+
+        if initializer:
+            body = Block([initializer, body])
+
+        return body
 
     def if_statement(self) -> Stmt:
         self.consume(LEFT_PAREN, "Expected '(' after 'if'.")
