@@ -71,8 +71,9 @@ class Interpreter:
         # https://stackoverflow.com/q/1123000
         # https://mihfazhillah.medium.com/anonymous-class-in-python-39e42140db94
         # FIXME: Maybe replace this with saner (for Python-world) pre-defined classes
-        # FIXME: This does not work because the 'self' argument in the lambdas is not automatically
+        # DONE: This does not work because the 'self' argument in the lambdas is not automatically
         # added
+        # NOTE: I'm an idiot, I have to instantiate this anonymous class afterwards
         globals.define("clock",
                        type("__Plox_clock__",
                             (PloxCallable,),
@@ -81,7 +82,8 @@ class Interpreter:
                                 "call"  : lambda self, interpreter, arguments: time.time(),
                                 "__str__" : lambda self: "<native fn>"
                             }
-                            ))
+                            )()
+                       )
 
     def interpret(self, statements: list[Stmt]):
         try:
@@ -269,7 +271,7 @@ class Interpreter:
         for argument in expr.arguments:
             arguments.append(self.evaluate(argument))
 
-        if not issubclass(callee, PloxCallable):
+        if not isinstance(callee, PloxCallable):
             raise PloxRuntimeError(expr.paren,
                                    "Can only call functions and classes.")
 
