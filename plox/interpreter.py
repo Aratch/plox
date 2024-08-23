@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from .plox_callable import PloxCallable
+from .plox_callable import PloxCallable, PloxFunction
 from .environment import Environment
 from .error import runtime_error
 from .token import Token, TokenType
@@ -64,8 +64,8 @@ Uninitialized = object()
 
 class Interpreter:
     def __init__(self):
-        globals = Environment()
-        self.environment = globals
+        self.globals = Environment()
+        self.environment = self.globals
 
         # DONE: Finish this ungodly abomination
         # https://stackoverflow.com/q/1123000
@@ -74,7 +74,7 @@ class Interpreter:
         # DONE: This does not work because the 'self' argument in the lambdas is not automatically
         # added
         # NOTE: I'm an idiot, I have to instantiate this anonymous class afterwards
-        globals.define("clock",
+        self.globals.define("clock",
                        type("__Plox_clock__",
                             (PloxCallable,),
                             {
@@ -128,6 +128,12 @@ class Interpreter:
     @visitor(Expression)
     def visit(self, stmt: Expression):
         self.evaluate(stmt.expression)
+        return None
+
+    @visitor(Function)
+    def visit(self, stmt: Function):
+        function: PloxFunction = PloxFunction(stmt)
+        self.environment.define(stmt.name.lexeme, function)
         return None
 
     @visitor(If)

@@ -21,3 +21,28 @@ arguments -> expression ( "," expression )* ;
 #+end_src
 
 To paraphrase the book: The =call= rule describes bare primary expressions (i.e. no parentheses after the primary expression) and/or call chains with a call depth of one or more.
+
+* 10.3 Function declarations
+
+The =declaration= rule looked like this previously:
+
+#+begin_src bnf
+declaration -> varDecl
+            | statement ;
+#+end_src
+
+We're adding a new production like so:
+
+#+begin_src bnf
+declaration -> funDecl
+            |  varDecl
+            |  statement ;
+
+funDecl     -> "fun" function ;
+function    -> IDENTIFIER "(" parameters? ")" block ;
+#+end_src
+
+=parameters= looks deceptively like =arguments=, but =parameters= only has =IDENTIFIER= elements:
+#+begin_src bnf
+parameters  -> IDENTIFIER ( "," IDENTIFIER )* ;
+#+end_src

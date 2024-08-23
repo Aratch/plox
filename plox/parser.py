@@ -52,6 +52,8 @@ class Parser:
         try:
             if self.match(VAR):
                 return self.var_declaration()
+            if self.match(FUN):
+                return self.function("function")
 
             return self.statement()
 
@@ -157,15 +159,35 @@ class Parser:
         self.consume(RIGHT_BRACE, "Expected '}' after block.")
         return statements
 
-    def print_statement(self):
+    def print_statement(self) -> Stmt:
         value: Expr = self.expression()
         self.consume(SEMICOLON, "Expected ';' after value.")
         return Print(value)
 
-    def expression_statement(self):
+    def expression_statement(self) -> Stmt:
         expr: Expr = self.expression()
         self.consume(SEMICOLON, "Expected ';' after expression.")
         return Expression(expr)
+
+    def function(self, kind: str) -> Stmt:
+        name: Token = self.consume(IDENTIFIER, f"Expected {kind} name.")
+        self.consume(LEFT_PAREN, f"Expected '(' after {kind} name.")
+
+        parameters: list[Token] = []
+
+        if not self.check(RIGHT_PAREN):
+            parameters.append(self.consume(IDENTIFIER, "Expected parameter name."))
+            while self.match(COMMA):
+                if len(parameters) >= 255:
+                    error(self.peek(), "Can't have more than 255 parameters.")
+                parameters.append(self.consume(IDENTIFIER, "Expected parameter name."))
+
+        self.consume(RIGHT_PAREN, "Expected ')' after parameters.")
+
+        self.consume(LEFT_BRACE, f"Expected '{{' before {kind} body.")
+        body: list[Stmt] = self.block()
+
+        return Function(name, parameters, body)
 
     ## Expression parsing
 

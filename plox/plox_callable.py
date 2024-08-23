@@ -3,6 +3,9 @@ from typing import Any
 from abc import ABCMeta, abstractmethod
 from time import time
 
+from .environment import Environment
+from .stmt import *
+
 # NOTE: Might replace with typing.Protocol down the line
 
 class PloxCallable(metaclass=ABCMeta):
@@ -28,6 +31,26 @@ class PloxCallable(metaclass=ABCMeta):
             and callable(subclass.__dict__[m])) \
             for m in PloxCallable.methods
                    )
+
+class PloxFunction(PloxCallable):
+    def __init__(self, declaration: Function):
+        self.declaration = declaration
+
+    def arity(self) -> int:
+        return len(self.declaration.params)
+
+    def __str__(self) -> str:
+        return f"<fn {self.declaration.name.lexeme}>"
+
+    def call(self, interpreter, arguments: list) -> Any:
+        environment = Environment(interpreter.globals)
+
+        for i, param in enumerate(self.declaration.params):
+            environment.define(param.lexeme, arguments[i])
+
+        interpreter.execute_block(self.declaration.body, environment)
+
+        return None # NOTE: Return values will be coming later
 
 
 # TODO: Figure out if I should do native funcs like this or not

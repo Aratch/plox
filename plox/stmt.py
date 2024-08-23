@@ -17,6 +17,12 @@ class Expression(Stmt):
     expression: Expr
 
 @dataclass
+class Function(Stmt):
+    name: Token
+    params: list[Token]
+    body: list[Stmt]
+
+@dataclass
 class If(Stmt):
     condition: Expr
     then_branch: Stmt
