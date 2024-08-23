@@ -294,7 +294,34 @@ class Parser:
             right : Expr = self.unary()
             return Unary(operator, right)
 
-        return self.primary()
+        return self.call()
+
+    def call(self) -> Expr:
+        expr: Expr = self.primary()
+
+        while True:
+            if self.match(LEFT_PAREN):
+                expr = self.finish_call(expr)
+            else:
+                break
+
+        return expr
+
+    def finish_call(self, callee: Expr) -> Expr:
+        arguments: list[Expr] = []
+
+        if not self.check(RIGHT_PAREN):
+            # HACK: This is supposed to mimic the do while loop in the original Java
+            arguments.append(self.expression())
+            while self.match(COMMA):
+                if len(arguments) >= 255:
+                    error(self.peek(), "Can't have more than 255 arguments.")
+                arguments.append(self.expression())
+
+        paren: Token = self.consume(RIGHT_PAREN,
+                                    "Expected ')' after arguments.")
+
+        return Call(callee, paren, arguments)
 
     def primary(self) -> Expr:
         if self.match(FALSE):

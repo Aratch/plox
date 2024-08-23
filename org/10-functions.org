@@ -1,0 +1,23 @@
+#+title: 10 Functions
+
+
+* 10.1 Function calls
+
+There's more to function calls than meets the eye.
+
+*Anything* can be a /callee/, as long as it evaluates to a function. As in:
+
+#+begin_src c
+getCallback()();
+#+end_src
+
+Function calls, being expressions, have to have higher precedence (i.e. lower on the ladder), just below =primary=:
+
+#+begin_src bnf
+unary -> ( "!" | "-" ) unary | call ;
+call  -> primary ( "(" arguments? ")" )* ;
+
+arguments -> expression ( "," expression )* ;
+#+end_src
+
+To paraphrase the book: The =call= rule describes bare primary expressions (i.e. no parentheses after the primary expression) and/or call chains with a call depth of one or more.

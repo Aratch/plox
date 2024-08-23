@@ -9,6 +9,8 @@ def get_writer(f):
         print( (indent * 4 * " " ) + line, file=f)
     return writer
 
+# NOTE: I can just as well replace all this nonsense with dataclasses.make_dataclasses()
+
 def define_type(writer: Callable, base_name: str, class_name: str, field_str: str):
     write = writer
 
@@ -64,6 +66,7 @@ def main(argv: list):
     define_ast(output_dir, "Expr", [
         "Assign   : Token name, Expr value",
         "Binary   : Expr left, Token operator, Expr right",
+        "Call     : Expr callee, Token paren, list[Expr] arguments",
         "Grouping : Expr expression",
         "Literal  : object value",
         "Logical  : Expr left, Token operator, Expr right",

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from .plox_callable import PloxCallable
 from .environment import Environment
 from .error import runtime_error
 from .token import Token, TokenType
@@ -7,6 +8,8 @@ from .expr import *
 from .stmt import *
 from .visitor import visitor
 import math
+
+import time
 
 def is_truthy(obj):
     if obj == None: return False
@@ -61,7 +64,24 @@ Uninitialized = object()
 
 class Interpreter:
     def __init__(self):
-        self.environment = Environment()
+        globals = Environment()
+        self.environment = globals
+
+        # DONE: Finish this ungodly abomination
+        # https://stackoverflow.com/q/1123000
+        # https://mihfazhillah.medium.com/anonymous-class-in-python-39e42140db94
+        # FIXME: Maybe replace this with saner (for Python-world) pre-defined classes
+        # FIXME: This does not work because the 'self' argument in the lambdas is not automatically
+        # added
+        globals.define("clock",
+                       type("__Plox_clock__",
+                            (PloxCallable,),
+                            {
+                                "arity" : lambda self: 0,
+                                "call"  : lambda self, interpreter, arguments: time.time(),
+                                "__str__" : lambda self: "<native fn>"
+                            }
+                            ))
 
     def interpret(self, statements: list[Stmt]):
         try:
@@ -239,4 +259,33 @@ class Interpreter:
         # Unreachable
         return None
 
-    # TODO: Ternary method
+    @visitor(Call)
+    def visit(self, expr: Call):
+        callee = self.evaluate(expr.callee)
+
+        arguments = []
+
+        argument: Expr
+        for argument in expr.arguments:
+            arguments.append(self.evaluate(argument))
+
+        if not issubclass(callee, PloxCallable):
+            raise PloxRuntimeError(expr.paren,
+                                   "Can only call functions and classes.")
+
+        # NOTE: In the original Java, function is cast to the interface type (LoxCallable)
+        # So... how do I do this in Python?
+        # abstract classes, Multiple-Inheritance, Protocols, Informal Interfaces, or metaclasses?
+        # Going with abc.ABCMeta for now, because
+        # - we have to rely on some kind of runtime checks, e.g. isinstance(), as seen above
+        # - I have no idea what the class hierarchy might look like, anyway
+        function: PloxCallable = callee
+
+        if len(arguments) != function.arity():
+            raise PloxRuntimeError(expr.paren,
+                                   f"Expected {function.arity()} arguments but got {len(arguments)}.")
+
+        return function.call(self, arguments)
+
+    # TODO: Interpret Ternary operator
+    # TODO: Interpret ',' sequence operator
