@@ -35,8 +35,9 @@ class PloxCallable(metaclass=ABCMeta):
                    )
 
 class PloxFunction(PloxCallable):
-    def __init__(self, declaration: Function):
+    def __init__(self, declaration: Function, closure: Environment):
         self.declaration = declaration
+        self.closure = closure
 
     def arity(self) -> int:
         return len(self.declaration.params)
@@ -45,7 +46,7 @@ class PloxFunction(PloxCallable):
         return f"<fn {self.declaration.name.lexeme}>"
 
     def call(self, interpreter, arguments: list) -> Any:
-        environment = Environment(interpreter.globals)
+        environment = Environment(self.closure)
 
         for i, param in enumerate(self.declaration.params):
             environment.define(param.lexeme, arguments[i])

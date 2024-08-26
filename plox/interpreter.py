@@ -128,7 +128,7 @@ class Interpreter:
 
     @visitor(Function)
     def visit(self, stmt: Function):
-        function: PloxFunction = PloxFunction(stmt)
+        function: PloxFunction = PloxFunction(stmt, self.environment)
         self.environment.define(stmt.name.lexeme, function)
         return None
 
