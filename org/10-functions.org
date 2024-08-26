@@ -46,3 +46,18 @@ function    -> IDENTIFIER "(" parameters? ")" block ;
 #+begin_src bnf
 parameters  -> IDENTIFIER ( "," IDENTIFIER )* ;
 #+end_src
+
+* 10.5 Return Statements
+
+#+begin_src bnf
+statement  -> exprStmt
+           | forStmt
+           | ifStmt
+           | printStmt
+           | returnStmt
+           | whileStmt
+           | block ;
+
+returnStmt -> "return" expression? ";" ;
+
+#+end_src

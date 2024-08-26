@@ -3,6 +3,8 @@ from typing import Any
 from abc import ABCMeta, abstractmethod
 from time import time
 
+from .exceptions import PloxReturnException
+
 from .environment import Environment
 from .stmt import *
 
@@ -48,7 +50,10 @@ class PloxFunction(PloxCallable):
         for i, param in enumerate(self.declaration.params):
             environment.define(param.lexeme, arguments[i])
 
-        interpreter.execute_block(self.declaration.body, environment)
+        try:
+            interpreter.execute_block(self.declaration.body, environment)
+        except PloxReturnException as return_exception:
+            return return_exception.value
 
         return None # NOTE: Return values will be coming later
 

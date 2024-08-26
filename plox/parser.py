@@ -88,6 +88,8 @@ class Parser:
             return self.if_statement()
         if self.match(PRINT):
             return self.print_statement()
+        if self.match(RETURN):
+            return self.return_statement()
         if self.match(WHILE):
             return self.while_statement()
         if self.match(LEFT_BRACE):
@@ -163,6 +165,16 @@ class Parser:
         value: Expr = self.expression()
         self.consume(SEMICOLON, "Expected ';' after value.")
         return Print(value)
+
+    def return_statement(self) -> Stmt:
+        keyword: Token = self.previous()
+        value: Expr | None = None
+
+        if not self.check(SEMICOLON):
+            value = self.expression()
+
+        self.consume(SEMICOLON, "Expected ';' after return value.")
+        return Return(keyword, value)
 
     def expression_statement(self) -> Stmt:
         expr: Expr = self.expression()

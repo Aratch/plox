@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from .exceptions import *
 from .plox_callable import PloxCallable, PloxFunction
 from .environment import Environment
 from .error import runtime_error
@@ -7,6 +8,9 @@ from .token import Token, TokenType
 from .expr import *
 from .stmt import *
 from .visitor import visitor
+
+from typing import Any
+
 import math
 
 import time
@@ -25,14 +29,6 @@ def is_equal(a, b):
 
     return a == b
 
-class PloxRuntimeError(RuntimeError):
-    def __init__(self, token: Token, message: str) -> None:
-        super().__init__(message)
-        self.message = message
-        self.token = token
-
-class LoopBreakException(PloxRuntimeError):
-    pass
 
 # Unary checker
 def check_number_operand(operator: Token, operand):
@@ -150,6 +146,15 @@ class Interpreter:
         value = self.evaluate(stmt.expression)
         print(stringify(value))
         return None
+
+    @visitor(Return)
+    def visit(self, stmt: Return):
+        value = None
+
+        if stmt.value:
+            value = self.evaluate(stmt.value)
+
+        raise PloxReturnException(value, stmt.keyword)
 
     @visitor(Var)
     def visit(self, stmt: Var):

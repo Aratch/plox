@@ -33,6 +33,11 @@ class Print(Stmt):
     expression: Expr
 
 @dataclass
+class Return(Stmt):
+    keyword: Token
+    value: Expr
+
+@dataclass
 class Var(Stmt):
     name: Token
     initializer: Expr = None
