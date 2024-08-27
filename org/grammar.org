@@ -1,0 +1,80 @@
+#+title: Plox Grammar
+
+#+begin_src bnf
+// A program consists of a series of statements,
+// of which the 'declaration' rule has the lowest precedence
+// (i.e. is checked for first, but executed/evaluated last)
+program       -> declaration* EOF ;
+
+// Statement grammar
+declaration   -> funDecl
+               | varDecl
+               | statement ;
+
+funDecl       -> "fun" function ;
+function      -> IDENTIFIER "(" parameters? ")" block ;
+
+parameters    -> IDENTIFIER ( "," IDENTIFIER )* ;
+
+varDecl       -> "var" IDENTIFIER ( "=" expression )? ";" ;
+
+statement     -> exprStmt
+               | forStmt
+               | ifStmt
+               | printStmt
+               | returnStmt
+               | whileStmt
+               | breakStmt ;
+               | block ;
+
+exprStmt      -> expression ";" ;
+
+forStmt       -> "for" "(" varDecl | exprStmt | ";" ")" )
+                 expression? ";"
+                 expression? ")" statement ;
+
+ifStmt        -> "if" "(" expression ")" statement
+               ( "else" statement )? ;
+
+printStmt     -> "print" expression ";" ;
+
+returnStmt    -> "return" expression? ";" ;
+
+whileStmt     -> "while" "(" expression ")" statement ;
+
+breakStmt     -> "break" ";" ;
+
+block         -> "{" declaration* "}" ;
+
+// Expression grammar
+
+expression    -> assignment ;
+
+// TODO: Revisit sequence and ternary operators
+// expression -> sequence ;
+// sequence   -> assignment ( "," assignment )* ;
+// assignment -> IDENTIFIER "=" assignment
+               | ternary ;
+// ternary    -> equality ( "?" expression ":" ternary )* ;
+// equality   -> comparison ( ( "!=" | "==" ) comparison )* ;
+
+assignment    -> IDENTIFIER "=" assignment
+               | logic_or ;
+
+logic_or      -> logic_and ( "or" logic_and )* ;
+logic_and     -> equality ( "and" equality )* ;
+
+equality      -> comparison ( ( "!=" | "==" ) comparison )* ;
+comparison    -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term          -> factor ( ( "-" | "+" ) factor )* ;
+factor        -> unary ( ( "/" | "*" ) unary )* ;
+
+unary         -> ( "!" | "-" ) unary | call ;
+
+call          -> primary ( "(" arguments? ")" )* ;
+arguments     -> expression ( "," expression )* ;
+
+primary       -> NUMBER | STRING | "true" | "false" | "nil"
+               | "(" expression ")"
+               | IDENTIFIER ;
+#+end_src

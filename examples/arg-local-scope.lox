@@ -1,0 +1,12 @@
+fun scope(a) {
+    print("CALL");
+    a = "changed"; // a is changed, but within which environment?!
+    print(a);
+    var a = "local"; // argument a is shadowed, this is good
+    print(a);
+    print("END FN");
+}
+var a = "global";
+print(a);
+scope(a);
+print(a); // this prints "global" again for some reason?

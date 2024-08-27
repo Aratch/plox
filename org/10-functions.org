@@ -61,3 +61,177 @@ statement  -> exprStmt
 returnStmt -> "return" expression? ";" ;
 
 #+end_src
+
+* Challenges
+
+** Lambda functions
+*** Problem Description
+#+begin_quote
+Lox’s function declaration syntax performs two independent operations. It creates a function and also binds it to a name. This improves usability for the common case where you do want to associate a name with the function. But in functional-styled code, you often want to create a function to immediately pass it to some other function or return it. In that case, it doesn’t need a name.
+
+Languages that encourage a functional style usually support anonymous functions or lambdas—an expression syntax that creates a function without binding it to a name. Add anonymous function syntax to Lox so that this works:
+#+end_quote
+
+#+begin_src
+fun thrice(fn) {
+  for (var i = 1; i <= 3; i = i + 1) {
+    fn(i);
+  }
+}
+
+thrice(fun (a) {
+  print a;
+});
+// "1".
+// "2".
+// "3".
+#+end_src
+
+#+begin_quote
+How do you handle the tricky case of an anonymous function expression occurring in an expression statement:
+#+end_quote
+
+#+begin_src
+fun () {};
+#+end_src
+*** Relevant Grammar
+In order to address the first half of the problem, here's the relevant bits and pieces of grammar:
+
+#+begin_src bnf
+program     -> declaration* EOF ;
+
+[...]
+
+unary -> ( "!" | "-" ) unary | call ;
+call  -> primary ( "(" arguments? ")" )* ;
+
+arguments -> expression ( "," expression )* ;
+
+[...]
+
+
+[...]
+
+returnStmt -> "return" expression? ";" ;
+
+declaration -> funDecl
+            |  varDecl
+            |  statement ;
+
+statement  -> exprStmt
+           | forStmt
+           | ifStmt
+           | printStmt
+           | returnStmt
+           | whileStmt
+           | block ;
+
+[...]
+
+varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
+funDecl     -> "fun" function ;
+function    -> IDENTIFIER "(" parameters? ")" block ;
+
+
+parameters  -> IDENTIFIER ( "," IDENTIFIER )* ;
+#+end_src
+
+Function definitions are *declarative statements*. They do not return a value (e.g. a function object).
+
+In terms of interpreter semantics, they already create and bind a function to a name that can be returned. Anonymous functions may, too, be bound -- which is already possible. Functions are already defined within a closure and encapsulate a closure themselves, which are all prerequisites for lambda functionality.
+
+The question is: Do we generalise function definitions as containing a "fun" expression or do we keep those separately?
+
+**** Separate
+#+begin_src bnf
+// Function declaration *statement*
+funDecl       -> "fun" function ;
+function      -> IDENTIFIER "(" parameters? ")" block ;
+parameters    -> IDENTIFIER ( "," IDENTIFIER )* ;
+
+// Lambda function *expression*
+// i.e. parse this: "fun (param1, param2) { stuff(); }"
+lambda        -> "fun" "(" parameters? ")" block ;
+// this rule has to be slot underneath (i.e. with higher precedence) call, because
+// the lambda function has to be parsed and executed first before being called
+
+primary       -> NUMBER | STRING | "true" | "false" | "nil"
+               | "(" expression ")"
+               | IDENTIFIER
+               | lambda ;
+#+end_src
+
+We can basically reuse the existing =Function < Stmt= class but have it inherit from =Expr= instead?
+#+begin_src python
+@dataclass
+class Lambda(Expr):
+    token: Token # the 'fun' token, so we can have fun error messages
+    params: list[Token]
+    body: list[Stmt]
+#+end_src
+
+Note: If we wanted to mirror, say, the Python approach we'd have to require the body be a single expression (i.e. exactly like Python), contain expressions only (for a functional-only approach) or require the block end with an expression.
+
+A lambda expression like this would to have to be immediately bound to a variable name, still -- or be executed/evaluated immediately.
+
+Either way, the interpreter wouldn't need to know the exact difference, just the scoping is different.
+
+**** Combined/Javascript approach?
+If we go the combined way, we can define anonymous functions and immediately call them in a statement (like in JS).
+
+Make "normal" function declarations functionally equivalent to:
+#+begin_src
+var f = fun (a) { print a; };
+#+end_src
+
+The *big* difference is that a =funDecl= *statement* doesn't end in ";":
+#+begin_src
+fun f (a)
+{
+  print a;
+}
+#+end_src
+
+...you know what, instead of any mental gymnastics involving shoving some kind of extra syntactical distinction, just make the =funDecl= and =function= rules evaluate into an =Expr= where the =IDENTIFIER= after =fun= is optional.
+
+#+begin_src bnf
+funDecl       -> "fun" function ;
+function      -> IDENTIFIER? "(" parameters? ")" block ;
+parameters    -> IDENTIFIER ( "," IDENTIFIER )* ;
+#+end_src
+
+So that =primary= can cascade into a function expression.
+#+begin_src bnf
+primary       -> NUMBER | STRING | "true" | "false" | "nil"
+               | "(" expression ")"
+               | IDENTIFIER
+               | ??? ;
+#+end_src
+
+...nononono, wait...
+#+begin_src bnf
+funDecl       -> funExpr ;
+[...]
+funExpr       -> IDENTIFIER? "(" parameters? ")" block ;
+
+primary       -> NUMBER | STRING | "true" | "false" | "nil"
+               | "(" expression ")"
+               | IDENTIFIER
+               | funExpr ;
+#+end_src
+
+This is fugly.
+*** The path of least resistance
+Go the the 'separate' route and disallow lambda functions in statements (as is the case now, basically) so as to not touch the existing function declaration code.
+#+begin_src bnf
+// Lambda function *expression*
+// i.e. parse this: "fun (param1, param2) { stuff(); }"
+lambda        -> "fun" "(" parameters? ")" block ;
+// this rule has to be slot underneath (i.e. with higher precedence) call, because
+// the lambda function has to be parsed and executed first before being called
+
+primary       -> NUMBER | STRING | "true" | "false" | "nil"
+               | "(" expression ")"
+               | IDENTIFIER
+               | lambda ;
+#+end_src
