@@ -56,7 +56,7 @@ class PloxFunction(PloxCallable):
         except PloxReturnException as return_exception:
             return return_exception.value
 
-        return None # NOTE: Return values will be coming later
+        return None
 
 
 # TODO: Figure out if I should do native funcs like this or not
