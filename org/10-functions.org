@@ -257,7 +257,7 @@ Change =generate_ast.py=:
         "Unary    : Token operator, Expr right",
         "Ternary  : Token operator, Expr condition, Expr left, Expr right",
         "Variable : Token name",
-        "Lambda   : Token token, params list[Token], 'body list[Stmt]'"
+        "Lambda   : Token token, list[Token] params, 'list[Stmt]' body"
     ])
     # see https://stackoverflow.com/a/59169236 for the string literal annotation above
 #+end_src
@@ -296,7 +296,7 @@ Add =Parser.lambda_expression()= method that mirrors =Parser.function()=:
 
         self.consume(RIGHT_PAREN, "Expected ')' after parameters.")
 
-        self.consume(LEFT_BRACE, f"Expected '{{' before {kind} body.")
+        self.consume(LEFT_BRACE, f"Expected '{{' before lambda body.")
         body: list[Stmt] = self.block()
 
         return Lambda(token, parameters, body)

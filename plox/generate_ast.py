@@ -72,7 +72,8 @@ def main(argv: list):
         "Logical  : Expr left, Token operator, Expr right",
         "Unary    : Token operator, Expr right",
         "Ternary  : Token operator, Expr condition, Expr left, Expr right",
-        "Variable : Token name"
+        "Variable : Token name",
+        "Lambda   : Token token, list[Token] params, 'list[Stmt]' body"
     ])
 
     define_ast(output_dir, "Stmt", [

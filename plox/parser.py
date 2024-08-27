@@ -357,6 +357,26 @@ class Parser:
 
         return Call(callee, paren, arguments)
 
+    def lambda_expression(self) -> Expr:
+        token: Token = self.advance() # we already know this is "fun"
+        self.consume(LEFT_PAREN, f"Expected '(' after 'fun' for lambda function.")
+
+        parameters: list[Token] = []
+
+        if not self.check(RIGHT_PAREN):
+            parameters.append(self.consume(IDENTIFIER, "Expected parameter name."))
+            while self.match(COMMA):
+                if len(parameters) >= 255:
+                    error(self.peek(), "Can't have more than 255 parameters.")
+                parameters.append(self.consume(IDENTIFIER, "Expected parameter name."))
+
+        self.consume(RIGHT_PAREN, "Expected ')' after parameters.")
+
+        self.consume(LEFT_BRACE, f"Expected '{{' before lambda body.")
+        body: list[Stmt] = self.block()
+
+        return Lambda(token, parameters, body)
+
     def primary(self) -> Expr:
         if self.match(FALSE):
             return Literal(False)
@@ -368,6 +388,9 @@ class Parser:
             return Literal(self.previous().literal)
         if self.match(IDENTIFIER):
             return Variable(self.previous())
+
+        if self.check(FUN):
+            return self.lambda_expression()
 
         if self.match(LEFT_PAREN):
             expr : Expr = self.expression()

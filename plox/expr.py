@@ -54,3 +54,9 @@ class Ternary(Expr):
 class Variable(Expr):
     name: Token
 
+@dataclass
+class Lambda(Expr):
+    token: Token
+    params: list[Token]
+    body: 'list[Stmt]'
+

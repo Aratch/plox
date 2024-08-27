@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from .exceptions import *
-from .plox_callable import PloxCallable, PloxFunction
+from .plox_callable import PloxCallable, PloxFunction, PloxLambda
 from .environment import Environment
 from .error import runtime_error
 from .token import Token, TokenType
@@ -299,6 +299,11 @@ class Interpreter:
                                    f"Expected {function.arity()} arguments but got {len(arguments)}.")
 
         return function.call(self, arguments)
+
+    @visitor(Lambda)
+    def visit(self, expr: Lambda):
+        function: PloxLambda = PloxLambda(expr, self.environment)
+        return function
 
     # TODO: Interpret Ternary operator
     # TODO: Interpret ',' sequence operator

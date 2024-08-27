@@ -7,6 +7,7 @@ from .exceptions import PloxReturnException
 
 from .environment import Environment
 from .stmt import *
+from .expr import *
 
 # NOTE: Might replace with typing.Protocol down the line
 
@@ -58,6 +59,30 @@ class PloxFunction(PloxCallable):
 
         return None
 
+
+class PloxLambda(PloxCallable):
+    def __init__(self, declaration: Lambda, closure: Environment):
+        self.declaration = declaration
+        self.closure = closure
+
+    def arity(self) -> int:
+        return len(self.declaration.params)
+
+    def __str__(self) -> str:
+        return f"<fn lambda>"
+
+    def call(self, interpreter, arguments: list) -> Any:
+        environment = Environment(self.closure)
+
+        for i, param in enumerate(self.declaration.params):
+            environment.define(param.lexeme, arguments[i])
+
+        try:
+            interpreter.execute_block(self.declaration.body, environment)
+        except PloxReturnException as return_exception:
+            return return_exception.value
+
+        return None
 
 # TODO: Figure out if I should do native funcs like this or not
 
