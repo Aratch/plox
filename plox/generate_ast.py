@@ -16,7 +16,7 @@ def define_type(writer: Callable, base_name: str, class_name: str, field_str: st
 
     fields = [x.strip() for x in field_str.split(",")]
 
-    write("@dataclass")
+    write("@dataclass(eq=True, frozen=True)")
     write(f"class {class_name}({base_name}):")
     if len(fields) >= 1:
         for field in fields:
@@ -45,6 +45,7 @@ def define_ast(output_dir: Path, base_name: str, types: list[str],
             for i in imports:
                 write(i)
         write()
+        write(f"@dataclass(eq=True, frozen=True)")
         write(f"class {base_name}(ABC):")
         write(f"pass", 1)
         write()

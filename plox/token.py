@@ -29,6 +29,10 @@ class Token:
     lexeme: str
     literal: object
     line: int
+    id: object = object()
+
+    def __hash__(self) -> int:
+        return hash(self.id)
 
     def __repr__(self) -> str:
         return f"{self.type} {self.lexeme} {self.literal}"

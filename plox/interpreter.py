@@ -38,7 +38,7 @@ def check_number_operand(operator: Token, operand):
 # Binary checker
 def check_number_operands(operator: Token, left, right):
     if isinstance(left, float) and isinstance(right, float):
-        if math.isclose(right, 0.0):
+        if math.isclose(right, 0.0) and operator.type == TokenType.SLASH:
             raise PloxRuntimeError(operator, "Attempting division by zero.")
         return
     raise PloxRuntimeError(operator, "Operands must be numbers.")
@@ -62,6 +62,8 @@ class Interpreter:
     def __init__(self):
         self.globals = Environment()
         self.environment = self.globals
+
+        self.locals: dict[Expr, int] = dict()
 
         # DONE: Finish this ungodly abomination
         # https://stackoverflow.com/q/1123000
@@ -90,6 +92,9 @@ class Interpreter:
 
     def execute(self, stmt: Stmt):
         self.visit(stmt)
+
+    def resolve(self, expr: Expr, depth: int):
+        self.locals[expr] = depth
 
     # Keep this for now
     def interpret_single_expr(self, expression: Expr):
@@ -186,7 +191,13 @@ class Interpreter:
     @visitor(Assign)
     def visit(self, expr: Assign):
         value = self.evaluate(expr.value)
-        self.environment.assign(expr.name, value)
+
+        distance: int | None = self.locals.get(expr)
+        if distance != None:
+            self.environment.assign_at(distance, expr.name, value)
+        else:
+            self.globals.assign(expr.name, value)
+
         return value
 
     @visitor(Literal)
@@ -224,8 +235,15 @@ class Interpreter:
         return None
 
     @visitor(Variable)
-    def visit(self, expr: Variable):
-        return self.environment.get(expr.name)
+    def visit(self, expr: Variable) -> Any:
+        return self.look_up_variable(expr.name, expr)
+
+    def look_up_variable(self, name: Token, expr: Expr) -> Any:
+        distance: int | None = self.locals.get(expr)
+        if distance != None:
+            return self.environment.get_at(distance, name.lexeme)
+        else:
+            return self.globals.get(name)
 
     @visitor(Binary)
     def visit(self, expr: Binary):

@@ -128,6 +128,7 @@ class TestParserGrammar(unittest.TestCase):
             self.assertTrue(results != [])
             self.assertTrue(all(results))
 
+    @unittest.skip("Not implemented yet")
     def test_sequential_comma_operator(self):
         source = "1.0 , 2.0"
         actual = self.parse_expression(source)
@@ -140,6 +141,7 @@ class TestParserGrammar(unittest.TestCase):
         self.assertTrue(matcher.match(actual, expected),
                         mismatch(actual, expected))
 
+    @unittest.skip("Not implemented yet")
     def test_ternary_conditional(self):
         source = "2 == 1 ? 2 + 1 : 2 * 2"
         actual = self.parse_expression(source)

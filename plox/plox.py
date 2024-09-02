@@ -9,6 +9,7 @@ from .parser import Parser
 from .ast_printer import AstPrinter
 from .token import Token
 from .scanner import Scanner
+from .resolver import Resolver
 from .expr import Expr
 from .error import *
 
@@ -41,12 +42,15 @@ class Plox:
         if Plox.had_error:
             return
 
+        resolver = Resolver(Plox.interpreter)
+
         # Make pyright shut the hell up
         if statements:
-            # print(AstPrinter().print(expression))
+            resolver.resolve(statements)
             Plox.interpreter.interpret(statements)
 
         elif expr:
+            # NOTE: Ignore this for now
             print(Plox.interpreter.evaluate(expr))
 
     def run_file(self, path: str):
