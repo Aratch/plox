@@ -41,7 +41,7 @@ def check_number_operands(operator: Token, left, right):
         if math.isclose(right, 0.0) and operator.type == TokenType.SLASH:
             raise PloxRuntimeError(operator, "Attempting division by zero.")
         return
-    raise PloxRuntimeError(operator, "Operands must be numbers.")
+    raise PloxRuntimeError(operator, f"{operator} {left} {right}:\nOperands must be numbers.")
 
 # TODO: Ternary checker
 

@@ -10,6 +10,7 @@ from .stmt import *
 class FunctionType(Enum):
     NONE = 1
     FUNCTION = 2
+    LAMBDA = 3
 
 class Resolver:
     def __init__(self, interpreter : 'Interpreter'):
@@ -48,7 +49,6 @@ class Resolver:
     def resolve_local(self, expr: Expr, name: Token):
         for i in range(len(self.scopes) - 1, -1, -1):
             if name.lexeme in self.scopes[i]:
-                # TODO: Interpreter.resolve()
                 self.interpreter.resolve(expr, len(self.scopes) - 1 - i)
 
     # HACK: Using the visitor decorator has come to bite me in the arse, it seems
@@ -91,7 +91,7 @@ class Resolver:
         self.resolve_function(stmt, FunctionType.FUNCTION)
 
     def resolve_function(self,
-                         function: Function,
+                         function: Function | Lambda,
                          type: FunctionType):
         self.begin_scope()
 
@@ -177,15 +177,16 @@ class Resolver:
 
     @visitor(Lambda)
     def visit(self, expr: Lambda):
-        self.resolve_function(expr)
+        self.resolve_function(expr,
+                              FunctionType.LAMBDA)
 
-    def resolve_lambda(self, function: Lambda):
-        self.begin_scope()
+    # def resolve_lambda(self, function: Lambda):
+    #     self.begin_scope()
 
-        param: Token
-        for param in function.params:
-            self.declare(param)
-            self.define(param)
+    #     param: Token
+    #     for param in function.params:
+    #         self.declare(param)
+    #         self.define(param)
 
-        self.resolve(function.body)
-        self.end_scope()
+    #     self.resolve(function.body)
+    #     self.end_scope()
