@@ -44,9 +44,14 @@ class Plox:
 
         resolver = Resolver(Plox.interpreter)
 
+
         # Make pyright shut the hell up
         if statements:
             resolver.resolve(statements)
+
+            if Plox.had_error:
+                return
+
             Plox.interpreter.interpret(statements)
 
         elif expr:

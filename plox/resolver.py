@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
 
+from enum import Enum
 from .error import error
 from .visitor import visitor
 from .token import Token
 from .expr import *
 from .stmt import *
 
+class FunctionType(Enum):
+    NONE = 1
+    FUNCTION = 2
+
 class Resolver:
     def __init__(self, interpreter : 'Interpreter'):
         self.interpreter : 'Interpreter' = interpreter
         self.scopes : list[dict[str, bool]] = []
+        self.current_function : FunctionType = FunctionType.NONE
 
     def begin_scope(self):
         self.scopes.append(dict())
@@ -27,6 +33,10 @@ class Resolver:
             return
 
         scope = self.scopes[-1]
+        if name.lexeme in scope:
+            error(name,
+                  "Already a variable with this name in this scope.")
+
         scope[name.lexeme] = False
 
     def define(self, name: Token):
@@ -78,10 +88,15 @@ class Resolver:
         self.declare(stmt.name)
         self.define(stmt.name)
 
-        self.resolve_function(stmt)
+        self.resolve_function(stmt, FunctionType.FUNCTION)
 
-    def resolve_function(self, function: Function):
+    def resolve_function(self,
+                         function: Function,
+                         type: FunctionType):
         self.begin_scope()
+
+        enclosing_function = self.current_function
+        self.current_function = type
 
         param: Token
         for param in function.params:
@@ -90,6 +105,8 @@ class Resolver:
 
         self.resolve(function.body)
         self.end_scope()
+
+        self.current_function = enclosing_function
 
     ## Remaining, "uninteresting" ast nodes
 
@@ -111,6 +128,9 @@ class Resolver:
 
     @visitor(Return)
     def visit(self, stmt: Return):
+        if self.current_function == FunctionType.NONE:
+            error(stmt.keyword,
+                  "Can't return from top-level code.")
         if stmt.value:
             self.visit(stmt.value)
 
