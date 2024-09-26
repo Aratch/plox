@@ -41,7 +41,7 @@ def check_number_operands(operator: Token, left, right):
         if math.isclose(right, 0.0) and operator.type == TokenType.SLASH:
             raise PloxRuntimeError(operator, "Attempting division by zero.")
         return
-    raise PloxRuntimeError(operator, f"{operator} {left} {right}:\nOperands must be numbers.")
+    raise PloxRuntimeError(operator, f"Token: {operator}\nLeft: {left}\nRight: {right}\nOperands must be numbers.")
 
 # TODO: Ternary checker
 
@@ -241,7 +241,8 @@ class Interpreter:
     def look_up_variable(self, name: Token, expr: Expr) -> Any:
         distance: int | None = self.locals.get(expr)
         if distance != None:
-            return self.environment.get_at(distance, name.lexeme)
+            returned_var = self.environment.get_at(distance, name.lexeme)
+            return returned_var
         else:
             return self.globals.get(name)
 

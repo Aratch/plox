@@ -28,9 +28,10 @@ class Environment:
             self.values[name.lexeme] = value
             return
 
-        if self.enclosing:
-            self.enclosing.assign(name, value)
-            return
+            # CAVEAT: Redundant?
+            # if self.enclosing:
+            #     self.enclosing.assign(name, value)
+            #     return
 
         raise PloxRuntimeError(name,
                                f"Undefined variable {name.lexeme}.")

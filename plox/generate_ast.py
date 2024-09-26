@@ -11,12 +11,14 @@ def get_writer(f):
 
 # NOTE: I can just as well replace all this nonsense with dataclasses.make_dataclasses()
 
+DATACLASS_DECORATOR="@dataclass(eq=False, frozen=True, unsafe_hash=True)"
+
 def define_type(writer: Callable, base_name: str, class_name: str, field_str: str):
     write = writer
 
     fields = [x.strip() for x in field_str.split(",")]
 
-    write("@dataclass(eq=True, frozen=True)")
+    write(DATACLASS_DECORATOR)
     write(f"class {class_name}({base_name}):")
     if len(fields) >= 1:
         for field in fields:
@@ -45,7 +47,7 @@ def define_ast(output_dir: Path, base_name: str, types: list[str],
             for i in imports:
                 write(i)
         write()
-        write(f"@dataclass(eq=True, frozen=True)")
+        write(DATACLASS_DECORATOR)
         write(f"class {base_name}(ABC):")
         write(f"pass", 1)
         write()

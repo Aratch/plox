@@ -50,6 +50,7 @@ class Resolver:
         for i in range(len(self.scopes) - 1, -1, -1):
             if name.lexeme in self.scopes[i]:
                 self.interpreter.resolve(expr, len(self.scopes) - 1 - i)
+                return # XXX: DID I FORGET THIS??
 
     # HACK: Using the visitor decorator has come to bite me in the arse, it seems
     #
@@ -136,6 +137,12 @@ class Resolver:
 
     @visitor(While)
     def visit(self, stmt: While):
+        # DONE: Check if in case of for-loop,
+        # initializer (which is the first statement in stmt.body)
+        # should somehow be visited first
+        # because this might be why for loops are broken
+        # NOTE: This is a non-issue because the parser already wraps the entire
+        # for statement in a block as (Initializer, While)
         self.visit(stmt.condition)
         self.visit(stmt.body)
 

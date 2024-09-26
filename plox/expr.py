@@ -4,58 +4,58 @@ from abc import ABC
 from .token import Token
 from dataclasses import dataclass
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=False, frozen=True, unsafe_hash=True)
 class Expr(ABC):
     pass
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=False, frozen=True, unsafe_hash=True)
 class Assign(Expr):
     name: Token
     value: Expr
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=False, frozen=True, unsafe_hash=True)
 class Binary(Expr):
     left: Expr
     operator: Token
     right: Expr
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=False, frozen=True, unsafe_hash=True)
 class Call(Expr):
     callee: Expr
     paren: Token
     arguments: list[Expr]
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=False, frozen=True, unsafe_hash=True)
 class Grouping(Expr):
     expression: Expr
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=False, frozen=True, unsafe_hash=True)
 class Literal(Expr):
     value: object
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=False, frozen=True, unsafe_hash=True)
 class Logical(Expr):
     left: Expr
     operator: Token
     right: Expr
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=False, frozen=True, unsafe_hash=True)
 class Unary(Expr):
     operator: Token
     right: Expr
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=False, frozen=True, unsafe_hash=True)
 class Ternary(Expr):
     operator: Token
     condition: Expr
     left: Expr
     right: Expr
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=False, frozen=True, unsafe_hash=True)
 class Variable(Expr):
     name: Token
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=False, frozen=True, unsafe_hash=True)
 class Lambda(Expr):
     token: Token
     params: list[Token]
