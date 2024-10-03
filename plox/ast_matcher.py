@@ -8,6 +8,7 @@ class AstMatcher:
     def match(self, left: Expr, right: Expr):
         return self.visit(left) == self.visit(right)
 
+
     @visitor(Ternary)
     def visit(self, expr: Ternary): #pyright: ignore
         return expr.operator.lexeme, \
