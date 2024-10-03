@@ -23,16 +23,16 @@ TokenType = Enum("TokenType",
 # https://stackoverflow.com/a/28130684
 globals().update(TokenType.__members__)
 
-@dataclass
+@dataclass(eq=True, frozen=True, unsafe_hash=True)
 class Token:
     type: TokenType
     lexeme: str
     literal: object
     line: int
-    id: object = object()
+    # id: object = object()
 
-    def __hash__(self) -> int:
-        return hash(self.id)
+    # def __hash__(self) -> int:
+    #     return hash(self.id)
 
     def __repr__(self) -> str:
         return f"{self.type} {self.lexeme} {self.literal}"
