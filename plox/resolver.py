@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import sys
 from enum import Enum
 from .error import error
 from .visitor import visitor
@@ -18,17 +18,38 @@ class Resolver:
         self.scopes : list[dict[str, bool]] = []
         self.current_function : FunctionType = FunctionType.NONE
 
+        self.usage : list[dict[str, bool]] = [dict()]
+
     def begin_scope(self):
         self.scopes.append(dict())
+        self.usage.append(dict())
 
     def end_scope(self):
         self.scopes.pop()
+        self.check_usages()
+
+    def check_usages(self):
+        usage_scope = self.usage.pop()
+        for name, used in usage_scope.items():
+            if not used:
+                print(f"{name} is not used anywhere.")
 
     def resolve(self, statements: list[Stmt]):
         for statement in statements:
             self.visit(statement)
 
+        if len(self.usage) == 1:
+            self.check_usages()
+
+    def record_usage(self, name: Token):
+        for i in range(len(self.usage) -1, -1, -1):
+            if name.lexeme in self.usage[i]:
+                self.usage[i][name.lexeme] = True
+
     def declare(self, name: Token):
+        usage_scope = self.usage[-1]
+        usage_scope[name.lexeme] = False
+
         # More explicit than 'not self.scopes'
         if len(self.scopes) == 0:
             return
@@ -72,6 +93,7 @@ class Resolver:
 
     @visitor(Variable)
     def visit(self, expr: Variable):
+        self.record_usage(expr.name)
         if len(self.scopes) > 0 and \
         self.scopes[-1].get(expr.name.lexeme) == False:
             error(expr.name,

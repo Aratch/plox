@@ -23,10 +23,10 @@
 
 (provide 'debug-template)
 (dap-register-debug-template
-  "Python :: Run file from project directory (return fibonacci)"
+  "Python :: Run file from project directory (blocks shadowing)"
   (list :name "Python :: Run file from project directory (Custom)"
         :type "python"
-        :args "examples/return-fibonacci.lox"
+        :args "examples/blocks-shadowing.lox"
         :cwd "${workspaceFolder}"
         ;; :env '(("PYTHONPATH" . "/home/andy/Projects/Python/crafting-interpreters"))
         :module nil

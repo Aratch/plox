@@ -95,5 +95,12 @@ global b
 global c\n"""
         self.assertEqual(expected, output)
 
+    def test_warn_unused_var(self):
+        filepath = "tests/lox/warn-unused-var.lox"
+        output = self.run_script(filepath)
+
+        expected="b is not used anywhere.\na is not used anywhere.\n"
+        self.assertEqual(expected, output)
+
 if __name__ == "__main__":
     unittest.main()
