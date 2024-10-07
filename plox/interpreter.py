@@ -7,7 +7,7 @@ from .error import runtime_error
 from .token import Token, TokenType
 from .expr import *
 from .stmt import *
-from .plox_class import LoxClass
+from .plox_class import PloxClass
 from .visitor import visitor
 
 from typing import Any
@@ -130,7 +130,7 @@ class Interpreter:
     @visitor(Class)
     def visit(self, stmt: Class):
         self.environment.define(stmt.name.lexeme, None)
-        klass: LoxClass = LoxClass(stmt.name.lexeme)
+        klass: PloxClass = PloxClass(stmt.name.lexeme)
         self.environment.assign(stmt.name, klass)
         return None
 
