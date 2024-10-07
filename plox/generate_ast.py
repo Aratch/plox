@@ -81,6 +81,7 @@ def main(argv: list):
 
     define_ast(output_dir, "Stmt", [
         "Block      : list[Stmt] statements",
+        "Class      : Token name, list[Function] methods",
         "Expression : Expr expression",
         "Function   : Token name, list[Token] params, list[Stmt] body",
         "If         : Expr condition, Stmt then_branch, Stmt else_branch",

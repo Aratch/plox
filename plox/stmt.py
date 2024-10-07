@@ -14,6 +14,11 @@ class Block(Stmt):
     statements: list[Stmt]
 
 @dataclass(eq=False, frozen=True, unsafe_hash=True)
+class Class(Stmt):
+    name: Token
+    methods: list['Function']
+
+@dataclass(eq=False, frozen=True, unsafe_hash=True)
 class Expression(Stmt):
     expression: Expr
 

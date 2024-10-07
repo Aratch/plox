@@ -81,6 +81,11 @@ class Resolver:
         self.resolve(stmt.statements)
         self.end_scope()
 
+    @visitor(Class)
+    def visit(self, stmt: Class):
+        self.declare(stmt.name)
+        self.define(stmt.name)
+
     @visitor(Var)
     def visit(self, stmt: Var):
         self.declare(stmt.name)

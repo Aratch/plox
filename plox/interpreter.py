@@ -7,6 +7,7 @@ from .error import runtime_error
 from .token import Token, TokenType
 from .expr import *
 from .stmt import *
+from .plox_class import LoxClass
 from .visitor import visitor
 
 from typing import Any
@@ -125,6 +126,13 @@ class Interpreter:
 
         finally:
             self.environment = previous
+
+    @visitor(Class)
+    def visit(self, stmt: Class):
+        self.environment.define(stmt.name.lexeme, None)
+        klass: LoxClass = LoxClass(stmt.name.lexeme)
+        self.environment.assign(stmt.name, klass)
+        return None
 
     @visitor(Expression)
     def visit(self, stmt: Expression):
